@@ -1,4 +1,5 @@
 import 'package:droptel/Obj/User.dart';
+import 'package:droptel/Signup/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -99,6 +100,8 @@ class _GuestWidgetState extends State<GuestWidget> {
                   nameError = "";
                   error = "";
                 });
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => HomePage()));
               } else {
                 if (nameError.isNotEmpty) {
                   setState(() {
@@ -136,7 +139,7 @@ class _GuestWidgetState extends State<GuestWidget> {
             style: TextStyle(
               fontFamily: GoogleFonts.prompt().fontFamily,
               color: Colors.red,
-              fontSize: 10,
+              fontSize: 14,
               fontWeight: FontWeight.w400,
             ),
           ),

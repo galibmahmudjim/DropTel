@@ -1,5 +1,5 @@
 import 'package:droptel/Obj/User.dart';
-import 'package:droptel/Signup/homepage.dart';
+import 'package:droptel/Pages/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -73,7 +73,9 @@ class _GuestWidgetState extends State<GuestWidget> {
                 setState(() {
                   nameError = "Name is required";
                 });
-                return "* Required";
+                // return "* Required";
+
+                return null;
               } else {
                 return null;
               }

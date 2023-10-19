@@ -337,7 +337,7 @@ class _HomePageLoginState extends State<HomePageLogin> {
                                         boxheight: boxheight,
                                         boxwidth: boxwidth,
                                         callback: (String? a, String? b) {
-                                          print(a! + " " + b!);
+                                          debugPrint(a! + " " + b!);
                                         },
                                       )
                                     : SignupWidget(

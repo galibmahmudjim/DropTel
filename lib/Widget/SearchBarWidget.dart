@@ -52,6 +52,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         children: [
           InkWell(
             onTap: () {
+              // debugPrint("search");
               widget.callback(true);
             },
             highlightColor: Colors.transparent,

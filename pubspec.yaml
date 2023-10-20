@@ -47,6 +47,9 @@ dependencies:
   animation_search_bar: ^0.0.10
   xen_popup_card: ^0.0.1
   animations: ^2.0.8
+  intl: ^0.18.1
+  sliding_up_panel2: ^3.3.0+1
+  sliding_up_panel: ^2.0.0+1
 
 flutter_icons:
   android: "launcher_icon"

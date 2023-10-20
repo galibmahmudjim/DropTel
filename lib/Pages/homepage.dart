@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:droptel/Pages/NewEvent.dart';
 import 'package:droptel/Widget/SearchWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -114,11 +115,11 @@ class _HomePageState extends State<HomePage> {
     return OpenContainer(
       openElevation: 5.0,
       closedElevation: 0.0,
-      transitionType: ContainerTransitionType.fade,
+      transitionType: ContainerTransitionType.fadeThrough,
       closedShape: CircleBorder(),
       transitionDuration: const Duration(milliseconds: 500),
       openBuilder: (BuildContext context, VoidCallback _) {
-        return NameEmailForm();
+        return NewEvent();
       },
       closedBuilder: (BuildContext context, VoidCallback openContainer) {
         return FloatingActionButton(

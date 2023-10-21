@@ -1,7 +1,11 @@
+import 'package:droptel/Constants/colorlist.dart';
 import 'package:droptel/Pages/homepage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+
+import '../Obj/EventGuest.dart';
 
 class NewEvent extends StatefulWidget {
   const NewEvent({super.key});
@@ -22,71 +26,10 @@ class _NewEventState extends State<NewEvent> {
   double height = 0;
   double width = 0;
   int typeIndex = 0;
-
+  List<Widget> items = [];
+  bool flag = false;
   final PanelController _panelController = PanelController();
 
-  // This widget is the root of your application.
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MaterialApp(
-  //     title: 'Test',
-  //     home: Scaffold(
-  //       appBar: AppBar(
-  //         title: Text('Test'),
-  //       ),
-  //       body: SlidingUpPanel(
-  //         controller: _panelController,
-  //         panelBuilder: _buildListView,
-  //       ),
-  //     ),
-  //   );
-  // }
-  //
-  // Widget _buildListView(ScrollController scrollController) {
-  //   return ListView.builder(
-  //     controller: scrollController,
-  //     itemCount: 100,
-  //     itemBuilder: (context, index) {
-  //       return Builder(
-  //         builder: (context) {
-  //           return Focus(
-  //             onFocusChange: (value) {
-  //               if (value) {
-  //                 if (!_panelController.isPanelOpen) {
-  //                   _panelController.open();
-  //                 }
-  //
-  //                 // Experimented with programmatic scrolling:
-  //                 //
-  //                 //     // Scroll, so the focused widget is always vertically centered
-  //                 //     scrollController.position.ensureVisible(
-  //                 //       context.findRenderObject()!,
-  //                 //       alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
-  //                 //       alignment: 0.5,
-  //                 //       curve: Curves.ease,
-  //                 //       duration: const Duration(milliseconds: 300),
-  //                 //     );
-  //                 //
-  //               }
-  //             },
-  //             child: Container(
-  //               margin: const EdgeInsets.all(10),
-  //               child: Builder(
-  //                 builder: (context) {
-  //                   return Text(
-  //                     (Focus.of(context).hasFocus ? 'Focused' : 'Unfocused') +
-  //                         ' - $index',
-  //                   );
-  //                 },
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-// }
   @override
   Widget build(BuildContext context) {
     EventEmail.text = "galibmahmudjim@gmail.com";
@@ -108,6 +51,57 @@ class _NewEventState extends State<NewEvent> {
             topLeft: Radius.circular(24.0),
             topRight: Radius.circular(24.0),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget SlideWidget(ScrollController scrollController) {
+    if (!flag) {
+      items.add(part1());
+      items.add(part2());
+      flag = true;
+    }
+    return Container(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: items.length + 1,
+                itemBuilder: (context, index) {
+                  return Builder(
+                    builder: (context) {
+                      return Focus(
+                        onFocusChange: (value) {
+                          if (value) {
+                            if (!_panelController.isPanelOpen) {
+                              _panelController.open();
+                            }
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(
+                              left: 10, right: 10, bottom: 10),
+                          child: Builder(
+                            builder: (context) {
+                              return index == items.length
+                                  ? Container(
+                                      height: 20,
+                                    )
+                                  : items[index];
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -400,144 +394,262 @@ class _NewEventState extends State<NewEvent> {
     ); //Event Email
   }
 
-  Widget SlideWidget(ScrollController scrollController) {
-    List<String> items = List.generate(100, (index) => 'Item $index');
+  bool tapped = false;
+  bool cancelTap = false;
 
-    return Container(
-      child: SafeArea(
+  Widget eventMemberGuest(EventGuest guest, BuildContext context) {
+    return GestureDetector(
+      onTapDown: (details) {
+        setState(() {
+          tapped = true;
+        });
+      },
+      onTapUp: (details) {
+        setState(() {
+          tapped = false;
+        });
+      },
+      onTap: () {
+        setState(() {
+          cancelTap = !cancelTap;
+        });
+      },
+      child: Container(
+        height: 70,
         child: Container(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Icon(Icons.close)),
-                      Text(
-                        "New Event",
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0x99000000)),
-                      ),
-                      IconButton(onPressed: () {}, icon: Icon(Icons.check))
-                    ],
-                  ),
-                ),
-                Form(
-                  key: formkey,
-                  child: Container(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        eventNameWidget(),
-                        eventDescriptionWidget(),
-                        eventDateWidget(),
-                        eventEmailWidget(), //Email
-                        Container(
-                          padding: EdgeInsets.only(left: 10, right: 10),
-                          height: height * 0.1,
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                  width: 1, color: Color(0x73706B6B)),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  //AddPeople
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    margin: EdgeInsets.only(
-                                      left: 10,
-                                    ),
-                                    width: width * 0.05,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          bottomLeft: Radius.circular(10)),
-                                    ),
-                                    child: Opacity(
-                                        opacity: 0.5,
-                                        child: Icon(Icons.people)),
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      padding: EdgeInsets.only(left: 10),
-                                      alignment: Alignment.centerLeft,
-                                      child: TextButton(
-                                        onPressed: () {},
-                                        child: Text(
-                                          "Add People",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontFamily: GoogleFonts.prompt(
-                                              letterSpacing: 1,
-                                              color: Color(0xFF464647),
-                                            ).fontFamily,
-                                            fontStyle: FontStyle.normal,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF464647),
-                                          ),
-                                          textAlign: TextAlign.left,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ), //Type
-                        ), //AddPeople
-                        // ListView.builder(
-                        //   controller: scrollController,
-                        //   itemCount: 100,
-                        //   itemBuilder: (context, index) {
-                        //     return Builder(
-                        //       builder: (context) {
-                        //         return Focus(
-                        //           onFocusChange: (value) {
-                        //             if (value) {
-                        //               if (!_panelController.isPanelOpen) {
-                        //                 _panelController.open();
-                        //               }
-                        //             }
-                        //           },
-                        //           child: Container(
-                        //             margin: const EdgeInsets.all(10),
-                        //             child: Builder(
-                        //               builder: (context) {
-                        //                 return Text(
-                        //                   (Focus.of(context).hasFocus
-                        //                           ? 'Focused'
-                        //                           : 'Unfocused') +
-                        //                       ' - $index',
-                        //                 );
-                        //               },
-                        //             ),
-                        //           ),
-                        //         );
-                        //       },
-                        //     );
-                        //   },
-                        // )
-                      ],
-                    ),
-                  ),
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            color: Colors.cyan[50],
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          child: Slidable(
+            key: const ValueKey(0),
+            startActionPane: ActionPane(
+              extentRatio: 0.25,
+              dragDismissible: false,
+              motion: ScrollMotion(),
+              dismissible: DismissiblePane(onDismissed: () {}),
+              children: <Widget>[
+                SlidableAction(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomLeft: Radius.circular(10)),
+                  onPressed: (context) {},
+                  backgroundColor: Color(0xFFFE4A49),
+                  foregroundColor: Colors.white,
+                  icon: Icons.delete,
+                  label: 'Delete',
                 ),
               ],
             ),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          guest.name!,
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        if (!guest.email!.isEmpty)
+                          SizedBox(
+                            height: 5,
+                          ),
+                        if (!guest.email!.isEmpty)
+                          Text(guest.email!,
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.black)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: Color(colorsList[guest.index!]),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget eventAddPeopleWidget() {
+    return Container(
+      padding: EdgeInsets.only(left: 10, right: 10),
+      height: height * 0.1,
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(width: 1, color: Color(0x73706B6B)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              //AddPeople
+              Container(
+                alignment: Alignment.centerLeft,
+                margin: EdgeInsets.only(
+                  left: 10,
+                ),
+                width: width * 0.05,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomLeft: Radius.circular(10)),
+                ),
+                child: Opacity(opacity: 0.5, child: Icon(Icons.people)),
+              ),
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.only(left: 10),
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () {
+                      GlobalKey<FormState> popupkey = GlobalKey<FormState>();
+                      TextEditingController EventguestName =
+                          TextEditingController();
+                      TextEditingController EventguestEmail =
+                          TextEditingController();
+
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              scrollable: true,
+                              title: Text('New Guest'),
+                              content: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Form(
+                                  key: popupkey,
+                                  child: Column(
+                                    children: <Widget>[
+                                      TextFormField(
+                                        controller: EventguestName,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Please enter Name';
+                                          }
+                                          return null;
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Name',
+                                          icon: Icon(Icons.account_box),
+                                        ),
+                                      ),
+                                      TextFormField(
+                                        controller: EventguestEmail,
+                                        decoration: InputDecoration(
+                                          labelText: 'Email',
+                                          icon: Icon(Icons.email),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              actions: [
+                                ElevatedButton(
+                                    child: Text("ADD"),
+                                    onPressed: () {
+                                      if (popupkey.currentState!.validate()) {
+                                        setState(() {
+                                          EventGuest eventGuest =
+                                              EventGuest.fromJson({
+                                            "Index": typeIndex,
+                                            "Name": EventguestName.text,
+                                            "Email": EventguestEmail.text,
+                                            "Color": "0xffffff"
+                                          });
+                                          setState(() {
+                                            items.add(eventMemberGuest(
+                                                eventGuest, context));
+                                            print(items.length);
+                                            typeIndex++;
+                                          });
+                                        });
+                                        Navigator.of(context).pop();
+                                      }
+                                    })
+                              ],
+                            );
+                          });
+                    },
+                    child: Text(
+                      "Add People",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontFamily: GoogleFonts.prompt(
+                          letterSpacing: 1,
+                          color: Color(0xFF464647),
+                        ).fontFamily,
+                        fontStyle: FontStyle.normal,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF464647),
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ), //Type
+    ); //AddPeople
+  }
+
+  Widget part1() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10, right: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.close)),
+          Text(
+            "New Event",
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0x99000000)),
+          ),
+          IconButton(onPressed: () {}, icon: Icon(Icons.check))
+        ],
+      ),
+    );
+  }
+
+  Widget part2() {
+    return Form(
+      key: formkey,
+      child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            eventNameWidget(),
+            eventDescriptionWidget(),
+            eventDateWidget(),
+            eventEmailWidget(), //Email
+            eventAddPeopleWidget(),
+          ],
         ),
       ),
     );

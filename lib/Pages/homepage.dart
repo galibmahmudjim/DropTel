@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                         callback: (bool? value) {
                           setState(() {
                             if (value == true) {
-                              search = true;
+                              search = false;
                             }
                           });
                         })
@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                         callback: (bool? value) {
                           setState(() {
                             if (value == true) {
-                              search = false;
+                              search = true;
                             }
                           });
                         },

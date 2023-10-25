@@ -1,4 +1,7 @@
+import 'package:droptel/Model/Mongodb.dart';
+import 'package:droptel/Model/sharedPref.dart';
 import 'package:droptel/Obj/User.dart';
+import 'package:droptel/Widget/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -6,7 +9,7 @@ class LoginWidget extends StatefulWidget {
   final double boxheight;
   final double boxwidth;
   final User user;
-  final Function(String?, String?) callback;
+  final Function(bool?) callback;
 
   const LoginWidget(
       {required this.boxheight,
@@ -20,8 +23,11 @@ class LoginWidget extends StatefulWidget {
 
 class _LoginWidgetState extends State<LoginWidget> {
   TextFormField? textFormField = TextFormField();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   String error = "";
   bool passwordVisible = false;
+
   GlobalKey<FormState> formkeyPassword = GlobalKey<FormState>();
   GlobalKey<FormState> formkeyEmail = GlobalKey<FormState>();
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
@@ -44,6 +50,13 @@ class _LoginWidgetState extends State<LoginWidget> {
             color: Color(0x41A8A8B3),
           ),
           child: TextFormField(
+            onChanged: (val) {
+              setState(() {
+                passwordError = "";
+                error = "";
+              });
+            },
+            controller: emailController,
             cursorColor: Colors.black,
             style: TextStyle(
               fontSize: 16,
@@ -81,20 +94,12 @@ class _LoginWidgetState extends State<LoginWidget> {
                   emailError = "Email is required";
                 });
                 return "* Required";
-              } else if (!RegExp(r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$",
-                      caseSensitive: false, multiLine: false)
-                  .hasMatch(value)) {
-                setState(() {
-                  emailError = "Enter valid email";
-                });
-                return "Enter valid email";
               } else {
                 return null;
               }
             },
-            onChanged: (val) {},
           ),
-        ),
+        ), //email
         SizedBox(
           height: widget.boxwidth / 200,
         ),
@@ -107,6 +112,13 @@ class _LoginWidgetState extends State<LoginWidget> {
               color: Color(0x41A8A8B3),
             ),
             child: TextFormField(
+              onChanged: (val) {
+                setState(() {
+                  passwordError = "";
+                  error = "";
+                });
+              },
+              controller: passwordController,
               cursorColor: Colors.black,
               style: TextStyle(
                 fontSize: 16,
@@ -160,22 +172,11 @@ class _LoginWidgetState extends State<LoginWidget> {
                     passwordError = "Password is required";
                   });
                   return "* Required";
-                } else if (value.length < 6) {
-                  setState(() {
-                    passwordError = "Password should be atleast 6 characters";
-                  });
-                  return "Password should be atleast 6 characters";
-                } else if (value.length > 15) {
-                  setState(() {
-                    passwordError =
-                        "Password should not be greater than 15 characters";
-                  });
-                  return "Password should not be greater than 15 characters";
                 } else
                   return null;
               },
               onSaved: (val) {},
-            )),
+            )), //password
         SizedBox(
           height: widget.boxwidth / 200,
         ),
@@ -190,12 +191,34 @@ class _LoginWidgetState extends State<LoginWidget> {
             color: Color(0xFF111112),
           ),
           child: TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (formkey.currentState!.validate()) {
                 setState(() {
                   emailError = "";
                   passwordError = "";
                   error = "";
+                });
+                User user = User();
+                widget.callback(true);
+                var res = Mongodb.authenticateUser(
+                    emailController.text.toString(),
+                    passwordController.text.toString());
+                res.then((value) {
+                  if (value != null) {
+                    print(value);
+                    snackBar(context, "Data Found");
+                    sharedPref.setID(value["_id"].toString());
+                    Map<String, dynamic> map = value;
+                    user = User.fromJson(map);
+                    print(user);
+                    widget.callback(false);
+                  } else {
+                    setState(() async {
+                      error = "Invalid Credentials";
+                      print(await sharedPref.getID().toString());
+                      widget.callback(false);
+                    });
+                  }
                 });
               } else {
                 if (emailError.isNotEmpty) {
@@ -221,7 +244,7 @@ class _LoginWidgetState extends State<LoginWidget> {
               ),
             ),
           ),
-        ),
+        ), //login button
         SizedBox(
           height: widget.boxwidth / 1000,
         ),

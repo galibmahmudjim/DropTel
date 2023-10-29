@@ -1,14 +1,3 @@
-/// timestamp : "2023-09-26T10:15:00Z"
-/// title : "Office supplies"
-/// description : "Office supplies"
-/// category : "Office"
-/// calculation_process : "add"
-/// extra_process : "yes"
-/// extra_process_details : "Vat"
-/// extra_process_value : 12
-/// amount : 50.00
-/// currency : "USD"
-
 class WalletDetails {
   WalletDetails({
     String? timestamp,

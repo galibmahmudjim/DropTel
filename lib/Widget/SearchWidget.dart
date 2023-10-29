@@ -6,11 +6,13 @@ class SearchWidget extends StatefulWidget {
   final double boxheight;
   final double boxwidth;
   final Function(bool?) callback;
+  final Function(String?) callbackText;
 
   const SearchWidget(
       {required this.boxheight,
       required this.boxwidth,
-      required this.callback});
+      required this.callback,
+      required this.callbackText});
 
   @override
   State<SearchWidget> createState() => _SearchWidgetState();
@@ -40,6 +42,7 @@ class _SearchWidgetState extends State<SearchWidget> {
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController textController = TextEditingController();
     return AnimatedContainer(
       clipBehavior: Clip.hardEdge,
       width: width,
@@ -80,6 +83,9 @@ class _SearchWidgetState extends State<SearchWidget> {
           Container(
             width: width * 0.6,
             child: TextField(
+              onChanged: (value) {
+                widget.callbackText(value);
+              },
               decoration: InputDecoration(
                 border: InputBorder.none,
                 alignLabelWithHint: true,

@@ -5,6 +5,8 @@ import 'package:droptel/Widget/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../Pages/homepage.dart';
+
 class LoginWidget extends StatefulWidget {
   final double boxheight;
   final double boxwidth;
@@ -86,10 +88,8 @@ class _LoginWidgetState extends State<LoginWidget> {
             ),
             validator: (value) {
               if (value == null) {
-                print(value);
                 return "Enter valid email";
               } else if (value!.isEmpty) {
-                print(value);
                 setState(() {
                   emailError = "Email is required";
                 });
@@ -165,7 +165,6 @@ class _LoginWidgetState extends State<LoginWidget> {
               ),
               validator: (value) {
                 if (value == null) {
-                  print(value);
                   return "Enter valid password";
                 } else if (value!.isEmpty) {
                   setState(() {
@@ -200,22 +199,30 @@ class _LoginWidgetState extends State<LoginWidget> {
                 });
                 User user = User();
                 widget.callback(true);
-                var res = Mongodb.authenticateUser(
+                Future<dynamic> res = Mongodb.authenticateUser(
                     emailController.text.toString(),
                     passwordController.text.toString());
-                res.then((value) {
-                  if (value != null) {
-                    print(value);
-                    snackBar(context, "Data Found");
-                    sharedPref.setID(value["_id"].toString());
-                    Map<String, dynamic> map = value;
-                    user = User.fromJson(map);
-                    print(user);
+                bool flag = true;
+                res.timeout(Duration(seconds: 2), onTimeout: () {
+                  snackBar(context, "Connection Timeout", Colors.red);
+                  setState(() {
+                    flag = false;
                     widget.callback(false);
+                  });
+                });
+                res.then((value) {
+                  if (value != null && flag == true) {
+                    user = User.fromJson(value);
+                    sharedPref.setID(user.id.toString());
+                    sharedPref.setName(user.name.toString());
+                    widget.callback(false);
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HomePage(user: user)));
                   } else {
-                    setState(() async {
+                    setState(() {
                       error = "Invalid Credentials";
-                      print(await sharedPref.getID().toString());
                       widget.callback(false);
                     });
                   }

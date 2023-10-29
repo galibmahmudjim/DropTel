@@ -1,13 +1,17 @@
+import 'package:droptel/Model/Mongodb.dart';
+import 'package:droptel/Model/sharedPref.dart';
 import 'package:droptel/Obj/User.dart';
 import 'package:droptel/Pages/homepage.dart';
+import 'package:droptel/Widget/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:objectid/objectid.dart';
 
 class GuestWidget extends StatefulWidget {
   final double boxheight;
   final double boxwidth;
   final User user;
-  final Function(String?, String?) callback;
+  final Function(bool?) callback;
 
   const GuestWidget(
       {required this.boxheight,
@@ -21,6 +25,7 @@ class GuestWidget extends StatefulWidget {
 
 class _GuestWidgetState extends State<GuestWidget> {
   TextFormField? textFormField = TextFormField();
+  TextEditingController nameController = TextEditingController();
   String error = "";
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   String nameError = "";
@@ -41,6 +46,7 @@ class _GuestWidgetState extends State<GuestWidget> {
           ),
           child: TextFormField(
             cursorColor: Colors.black,
+            controller: nameController,
             style: TextStyle(
               fontSize: 16,
               fontFamily: GoogleFonts.prompt(
@@ -69,13 +75,10 @@ class _GuestWidgetState extends State<GuestWidget> {
             ),
             validator: (value) {
               if (value!.isEmpty) {
-                print(value);
                 setState(() {
                   nameError = "Name is required";
                 });
-                // return "* Required";
-
-                return null;
+                return "* Required";
               } else {
                 return null;
               }
@@ -96,14 +99,42 @@ class _GuestWidgetState extends State<GuestWidget> {
             color: Color(0xFF111112),
           ),
           child: TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (formkey.currentState!.validate()) {
                 setState(() {
                   nameError = "";
                   error = "";
                 });
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => HomePage()));
+                widget.callback(true);
+                String id = ObjectId().hexString;
+
+                User user = User(
+                  id: id,
+                  name: nameController.text,
+                );
+                await sharedPref.setID(id);
+                await sharedPref.setName(nameController.text);
+                Future<dynamic> newuser = Mongodb.NewUser(user);
+                bool flag = true;
+                newuser.timeout(Duration(seconds: 2), onTimeout: () {
+                  widget.callback(false);
+                  snackBar(context, "Please check your internet connection",
+                      Colors.red);
+                  setState(() {
+                    flag = false;
+                  });
+                });
+                newuser.then((value) {
+                  if (value != null && flag == true) {
+                    widget.callback(false);
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HomePage(
+                                  user: user,
+                                )));
+                  }
+                });
               } else {
                 if (nameError.isNotEmpty) {
                   setState(() {

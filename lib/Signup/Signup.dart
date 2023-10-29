@@ -2,7 +2,12 @@ import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/User.dart';
 import 'package:droptel/homeLogin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:objectid/objectid.dart';
 
 import '../Widget/snackbar.dart';
 
@@ -426,7 +431,9 @@ class _SignupWidgetState extends State<SignupWidget> {
                       passwordError = "";
                       error = "";
                     });
+                    final id = ObjectId().hexString;
                     Mongodb db = Mongodb();
+                    user.id = id;
                     user.email = emailController.text.toString();
                     user.name = nameController.text.toString();
                     user.dateofBirth = dateOfBirthController.text.toString();
@@ -434,8 +441,10 @@ class _SignupWidgetState extends State<SignupWidget> {
                     widget.callback(true);
                     var res = await Mongodb.NewUser(user);
                     if (res.success) {
-                      snackBar(context,
-                          'Sign up Successful. Please Login to continue.');
+                      snackBar(
+                          context,
+                          'Sign up Successful. Please Login to continue.',
+                          Colors.greenAccent);
                     }
                     Navigator.push(
                       context,

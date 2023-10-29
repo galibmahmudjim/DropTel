@@ -1,18 +1,18 @@
-import 'package:mongo_dart/mongo_dart.dart';
-
 class User {
   String? _email;
   String? _password;
   String? _name;
   String? _dateofBirth;
-  ObjectId? _id;
+  String? _id;
+  String? _imageURL;
 
   User(
-      {ObjectId? id,
+      {String? id,
       String? email,
       String? password,
       String? name,
-      String? dateofBirth}) {
+      String? dateofBirth,
+      String? imageURL}) {
     if (id != null) {
       this._id = id;
     }
@@ -28,11 +28,14 @@ class User {
     if (dateofBirth != null) {
       this._dateofBirth = dateofBirth;
     }
+    if (imageURL != null) {
+      this._imageURL = imageURL;
+    }
   }
 
-  ObjectId? get id => _id;
+  String? get id => _id;
 
-  set id(ObjectId? id) => _id = id;
+  set id(String? id) => _id = id;
 
   String? get email => _email;
 
@@ -50,12 +53,17 @@ class User {
 
   set dateofBirth(String? dateofBirth) => _dateofBirth = dateofBirth;
 
+  String? get imageURL => _imageURL;
+
+  set imageURL(String? imageURL) => _imageURL = imageURL;
+
   User.fromJson(Map<String, dynamic> json) {
     _id = json['_id'];
     _email = json['Email'];
     _password = json['Password'];
     _name = json['Name'];
     _dateofBirth = json['DateofBirth'];
+    _imageURL = json['ImageURL'];
   }
 
   Map<String, dynamic> toJson() {
@@ -65,6 +73,7 @@ class User {
     data['Password'] = this._password;
     data['Name'] = this._name;
     data['DateofBirth'] = this._dateofBirth;
+    data['ImageURL'] = this._imageURL;
     return data;
   }
 }

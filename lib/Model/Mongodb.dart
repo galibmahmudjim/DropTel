@@ -1,11 +1,13 @@
+import 'package:droptel/Obj/eventWallet.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../Obj/User.dart';
 
 class Mongodb {
-  static var db;
+  static Db db = null as Db;
   static var User_collection;
+  static var Event_collection;
 
   static connect() async {
     await dotenv.load(fileName: "lib/.env");
@@ -13,22 +15,96 @@ class Mongodb {
     db = await Db.create(dbUrl!);
     await db.open();
     User_collection = db.collection('User');
+    Event_collection = db.collection('EventWallet');
     return db;
   }
 
-  static NewUser(User user) async {
-    if (db.isConnected() == false) await connect();
+  static Future<dynamic?> NewUser(User user) async {
+    if (db.isConnected == false) {
+      await connect();
+    }
 
     var result = await User_collection.insertOne(user.toJson());
-    print(result.success);
     return result;
   }
 
-  static authenticateUser(String email, String password) async {
-    var result = await User_collection.findOne({
+  static Future<dynamic?> authenticateUser(
+      String email, String password) async {
+    if (db.isConnected == false) {
+      await connect();
+    }
+    dynamic result = await User_collection.findOne({
       "Email": email,
       "Password": password,
     });
     return result;
+  }
+
+  static Future<dynamic> findUser(String id, String name) async {
+    if (db.isConnected == false) {
+      await connect();
+    }
+    var result = await User_collection.findOne({
+      "_id": id,
+      "Name": name,
+    });
+
+    return await result;
+  }
+
+  static Future<dynamic> addNewEvent(eventWallet eventwallet) async {
+    if (db.isConnected == false) {
+      await connect();
+    }
+    var result = await Event_collection.insertOne(eventwallet.toJson());
+
+    return await result;
+  }
+
+  static Future<dynamic>? getAllEvents(String adminId) async {
+    if (db.isConnected == false) {
+      connect();
+    }
+    final result = await Event_collection.find({"AdminId": adminId}).toList();
+    result.sort((a, b) {
+      final fieldValueA =
+          a['DateCreated'] as String; // Change the type as per your data
+      final fieldValueB =
+          b['DateCreated'] as String; // Change the type as per your data
+
+      return fieldValueB.compareTo(fieldValueA);
+    });
+    return result;
+  }
+
+  static Future<dynamic>? getAllEventsByTitle(
+      String adminId, String? text) async {
+    if (db.isConnected == false) {
+      connect();
+    }
+    final result = await Event_collection.find({"AdminId": adminId}).toList();
+    result.sort((a, b) {
+      final fieldValueA =
+          a['DateCreated'] as String; // Change the type as per your data
+      final fieldValueB =
+          b['DateCreated'] as String; // Change the type as per your data
+
+      return fieldValueB.compareTo(fieldValueA);
+    });
+    result.retainWhere((element) {
+      return element['Title']
+              .toString()
+              .toUpperCase()
+              .contains(text.toString().toUpperCase()) ||
+          element['Description'].contains(text);
+    });
+    return result;
+  }
+
+  static Future<dynamic>? deleteEvent(String eventID) {
+    if (db.isConnected == false) {
+      connect();
+    }
+    return Event_collection.remove({"_id": eventID});
   }
 }

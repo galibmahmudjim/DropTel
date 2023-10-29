@@ -1,14 +1,22 @@
 import 'package:droptel/Constants/colorlist.dart';
+import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Pages/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:objectid/src/objectid/objectid.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../Obj/EventGuest.dart';
+import '../Obj/User.dart';
+import '../Obj/eventWallet.dart';
+import '../Widget/loading.dart';
+import '../Widget/snackbar.dart';
 
 class NewEvent extends StatefulWidget {
-  const NewEvent({super.key});
+  final User user;
+
+  const NewEvent({required this.user});
 
   @override
   State<NewEvent> createState() => _NewEventState();
@@ -21,18 +29,25 @@ class _NewEventState extends State<NewEvent> {
   TextEditingController EventEmail = TextEditingController();
   TextEditingController EventLocation = TextEditingController();
   TextEditingController EventType = TextEditingController();
+  final id = ObjectId().hexString;
 
+  List<EventGuest> guestlist = [];
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   double height = 0;
   double width = 0;
   int typeIndex = 0;
-  List<Widget> items = [];
+  Map<int, Widget> items = {};
   bool flag = false;
+
+  int widgetNumber = 3;
   final PanelController _panelController = PanelController();
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    EventEmail.text = "galibmahmudjim@gmail.com";
+    EventEmail.text =
+        (widget.user.email == null ? widget.user.name : widget.user.email)!;
     height = MediaQuery.of(context).size.height;
     width = (MediaQuery.of(context).size.width);
 
@@ -46,7 +61,7 @@ class _NewEventState extends State<NewEvent> {
           panelBuilder: SlideWidget,
 
           // main body or content behind the panel
-          body: HomePage(),
+          body: HomePage(user: widget.user),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24.0),
             topRight: Radius.circular(24.0),
@@ -58,49 +73,73 @@ class _NewEventState extends State<NewEvent> {
 
   Widget SlideWidget(ScrollController scrollController) {
     if (!flag) {
-      items.add(part1());
-      items.add(part2());
+      items[-2] = part1();
+      items[-1] = part2();
+      // items.add(part1());
+      // items.add(part2());
+      EventGuest eventGuest = EventGuest.fromJson({
+        "Index": typeIndex,
+        "Name": widget.user.name,
+        "Email": widget.user.email == null ? "" : widget.user.email,
+        "Color": colorsList[typeIndex].toString()
+      });
+      guestlist.add(eventGuest);
+      items[typeIndex] = eventMemberGuest(typeIndex, eventGuest, context);
+      print(items.length);
+      typeIndex++;
+
       flag = true;
     }
     return Container(
       child: Padding(
         padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: items.length + 1,
-                itemBuilder: (context, index) {
-                  return Builder(
-                    builder: (context) {
-                      return Focus(
-                        onFocusChange: (value) {
-                          if (value) {
-                            if (!_panelController.isPanelOpen) {
-                              _panelController.open();
-                            }
-                          }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                              left: 10, right: 10, bottom: 10),
-                          child: Builder(
-                            builder: (context) {
-                              return index == items.length
-                                  ? Container(
-                                      height: 20,
-                                    )
-                                  : items[index];
+            Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: items.length + 1,
+                    itemBuilder: (context, index) {
+                      return Builder(
+                        builder: (context) {
+                          return Focus(
+                            onFocusChange: (value) {
+                              if (value) {
+                                if (!_panelController.isPanelOpen) {
+                                  _panelController.open();
+                                }
+                              }
                             },
-                          ),
-                        ),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                                  left: 10, right: 10, bottom: 10),
+                              child: Builder(
+                                builder: (context) {
+                                  return index == items.length
+                                      ? Container(
+                                          height: 20,
+                                        )
+                                      : items.values.elementAt(index);
+                                },
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
+            isLoading
+                ? Opacity(
+                    opacity: 0.5,
+                    child: loading(
+                        heightBox: MediaQuery.of(context).size.height,
+                        widthBox: MediaQuery.of(context).size.width))
+                : Container(),
           ],
         ),
       ),
@@ -121,6 +160,12 @@ class _NewEventState extends State<NewEvent> {
       ),
       child: TextFormField(
         controller: EventName,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Name';
+          }
+          return null;
+        },
         cursorColor: Colors.black,
         style: TextStyle(
           fontSize: 25,
@@ -270,9 +315,11 @@ class _NewEventState extends State<NewEvent> {
                                       "/" +
                                       value.year.toString() +
                                       " " +
-                                      value1.hour.toString() +
+                                      (value1.hour % 12)
+                                          .toString()
+                                          .padLeft(2, '0') +
                                       ":" +
-                                      value1.minute.toString() +
+                                      value1.minute.toString().padLeft(2, '0') +
                                       " " +
                                       value1.period.toString().split('.')[1];
                                 })
@@ -397,7 +444,7 @@ class _NewEventState extends State<NewEvent> {
   bool tapped = false;
   bool cancelTap = false;
 
-  Widget eventMemberGuest(EventGuest guest, BuildContext context) {
+  Widget eventMemberGuest(int index, EventGuest guest, BuildContext context) {
     return GestureDetector(
       onTapDown: (details) {
         setState(() {
@@ -434,7 +481,13 @@ class _NewEventState extends State<NewEvent> {
                   borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(10),
                       bottomLeft: Radius.circular(10)),
-                  onPressed: (context) {},
+                  onPressed: (context) {
+                    if (index > 0)
+                      setState(() {
+                        items.remove(index);
+                        guestlist.remove(guest);
+                      });
+                  },
                   backgroundColor: Color(0xFFFE4A49),
                   foregroundColor: Colors.white,
                   icon: Icons.delete,
@@ -531,33 +584,37 @@ class _NewEventState extends State<NewEvent> {
                             return AlertDialog(
                               scrollable: true,
                               title: Text('New Guest'),
-                              content: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Form(
-                                  key: popupkey,
-                                  child: Column(
-                                    children: <Widget>[
-                                      TextFormField(
-                                        controller: EventguestName,
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter Name';
-                                          }
-                                          return null;
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText: 'Name',
-                                          icon: Icon(Icons.account_box),
+                              content: Container(
+                                width: width * 0.9,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: Form(
+                                    key: popupkey,
+                                    child: Column(
+                                      children: <Widget>[
+                                        TextFormField(
+                                          controller: EventguestName,
+                                          validator: (value) {
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return 'Please enter Name';
+                                            }
+                                            return null;
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: 'Name',
+                                            icon: Icon(Icons.account_box),
+                                          ),
                                         ),
-                                      ),
-                                      TextFormField(
-                                        controller: EventguestEmail,
-                                        decoration: InputDecoration(
-                                          labelText: 'Email',
-                                          icon: Icon(Icons.email),
+                                        TextFormField(
+                                          controller: EventguestEmail,
+                                          decoration: InputDecoration(
+                                            labelText: 'Email',
+                                            icon: Icon(Icons.email),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -572,11 +629,14 @@ class _NewEventState extends State<NewEvent> {
                                             "Index": typeIndex,
                                             "Name": EventguestName.text,
                                             "Email": EventguestEmail.text,
-                                            "Color": "0xffffff"
+                                            "Color":
+                                                colorsList[typeIndex].toString()
                                           });
+
                                           setState(() {
-                                            items.add(eventMemberGuest(
-                                                eventGuest, context));
+                                            guestlist.add(eventGuest);
+                                            items[typeIndex] = eventMemberGuest(
+                                                typeIndex, eventGuest, context);
                                             print(items.length);
                                             typeIndex++;
                                           });
@@ -630,7 +690,54 @@ class _NewEventState extends State<NewEvent> {
                 fontWeight: FontWeight.bold,
                 color: Color(0x99000000)),
           ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.check))
+          IconButton(
+              onPressed: () {
+                if (formkey.currentState!.validate()) {
+                  eventWallet event = eventWallet.fromJson({
+                    "_id": id,
+                    "Title": EventName.text,
+                    "Description": EventDescription.text,
+                    "Date": EventDate.text,
+                    "DateCreated": DateTime.now().toString(),
+                    "AdminId": widget.user.id,
+                    "AdminEmail": EventEmail.text,
+                    "EventGuest": guestlist.map((e) => e.toJson()).toList()
+                  });
+                  setState(() {
+                    isLoading = true;
+                  });
+                  var res = Mongodb.addNewEvent(event);
+                  res.timeout(Duration(seconds: 5), onTimeout: () {
+                    setState(() {
+                      isLoading = false;
+                      snackBar(
+                          context, "Check internet Connection", Colors.red);
+                    });
+                  }).then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomePage(
+                                          user: widget.user,
+                                        )))
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(
+                                context, "Something went wrong", Colors.red)
+                          }
+                      });
+                }
+              },
+              icon: Icon(Icons.check))
         ],
       ),
     );

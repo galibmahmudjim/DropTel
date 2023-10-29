@@ -24,12 +24,6 @@ class _HomePageLoginState extends State<HomePageLogin> {
   bool guestClicked = false;
   bool loginClicked = true;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
-
   bool loadingHome = false;
 
   @override
@@ -345,7 +339,11 @@ class _HomePageLoginState extends State<HomePageLogin> {
                                         user: user,
                                         boxheight: boxheight,
                                         boxwidth: boxwidth,
-                                        callback: (String? a, String? b) {},
+                                        callback: (bool? load) {
+                                          setState(() {
+                                            loadingHome = load!;
+                                          });
+                                        },
                                       )
                                     : loginClicked
                                         ? LoginWidget(

@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:droptel/Pages/Expenses/expenses.dart';
 import 'package:droptel/Pages/NewEvent.dart';
 import 'package:droptel/Widget/SearchWidget.dart';
 import 'package:droptel/Widget/loading.dart';
@@ -132,13 +133,21 @@ class _HomePageState extends State<HomePage> {
                                 DateTime date =
                                     DateTime.parse(event.dateCreated!);
                                 var formattedDate =
-                                    DateFormat('HH:mm a\nyyyy-MM-dd')
+                                    DateFormat('HH:mm a\nyyyy-MMM-dd')
                                         .format(date);
                                 return GridTile(
                                     child: Card(
-                                  elevation: 1,
+                                  elevation: 2,
                                   child: InkWell(
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => expenses(
+                                                    eventwallet: event,
+                                                    user: widget.user,
+                                                  )));
+                                    },
                                     onLongPress: () {
                                       showDialog(
                                           context: context,

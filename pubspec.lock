@@ -161,6 +161,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  currency_symbols:
+    dependency: "direct main"
+    description:
+      name: currency_symbols
+      sha256: "63db1af40ca557a6f863319bcf08797099566d9c3937d4279656f3bbb107d4ac"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1+2"
   curved_navigation_bar:
     dependency: "direct main"
     description:
@@ -421,6 +429,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.4"
+  multi_select_bottom_sheet:
+    dependency: "direct main"
+    description:
+      name: multi_select_bottom_sheet
+      sha256: "7e8c3db1b07a4e184c6f98e0fbe186c973cb9de6d19d44f6e5c25bdcd630693c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  multi_select_flutter:
+    dependency: "direct main"
+    description:
+      name: multi_select_flutter
+      sha256: "503857b415d390d29159df8a9d92d83c6aac17aaf1c307fb7bcfc77d097d20ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.3"
   objectid:
     dependency: "direct main"
     description:

@@ -15,7 +15,6 @@ class sharedPref {
 
   static Future<String?> getID() async {
     if (prefs == null) await init();
-    print(await prefs.getString("_id"));
     return await prefs.getString("_id");
   }
 

@@ -23,11 +23,13 @@ class _splash_screenState extends State<splash_screen> {
     if (id != null && name != null) {
       Future<dynamic> res = Mongodb.findUser(id.toString(), name.toString());
       User? user;
+
       await res.then((value) {
         user = User.fromJson(value);
       });
       if (user != null) {
         print(user!.toJson());
+
         return HomePage(user: user!);
       } else {
         return HomePageLogin();
@@ -46,7 +48,7 @@ class _splash_screenState extends State<splash_screen> {
       pageTransitionType: PageTransitionType.rightToLeft,
       splashTransition: SplashTransition.slideTransition,
       screenFunction: () async {
-        return await checkLoggedIn();
+        return checkLoggedIn();
       },
     );
   }

@@ -15,3 +15,7 @@ Logger logger = Logger(
       printTime: false // Should each log print contain a timestamp
       ),
 );
+
+log_check() {
+  logger.d("Checked");
+}

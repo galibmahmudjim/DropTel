@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Obj/EventGuest.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Widget/loading.dart';
@@ -8,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
-import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 
 class expenses extends StatefulWidget {
@@ -27,6 +27,27 @@ class _expensesState extends State<expenses> {
   bool isNewActivityCreated = false;
   double height = 0;
   double width = 0;
+
+  //multiselect guest list data
+  List<EventGuest?> selectedGuests = [];
+  List<EventGuest?> selectedGuestsInit = [];
+  List<MultiSelectItem<EventGuest?>?>? selectedGuestsShow = [];
+  List<MultiSelectItem<EventGuest>> selectGuests = [];
+  EventGuest allGuest = EventGuest(name: "All", email: "");
+  bool flagall = false;
+  //multiset guest end
+
+  //statement or activity
+  int buttonSeleted = 1;
+  //statement or activity end
+
+  // new statement
+  List<String> list = <String>['Payment', 'Expenditure'];
+  var guestListSelected = [];
+  String? dropdownValue;
+  int actionSelected = 1;
+  final _multiSelectKey = GlobalKey<FormFieldState>();
+  // new state end
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +71,6 @@ class _expensesState extends State<expenses> {
       body: Body(),
     );
   }
-
-  int buttonSeleted = 1;
 
   Widget Body() {
     String unicodeString = '\u09F3';
@@ -299,15 +318,6 @@ class _expensesState extends State<expenses> {
     );
   }
 
-  List<String> list = <String>['Payment', 'Expenditure'];
-
-  var guestListSelected = [];
-
-  String? dropdownValue;
-  int actionSelected = 1;
-
-  final _multiSelectKey = GlobalKey<FormFieldState>();
-
   Widget newStatement() {
     TextEditingController controller = TextEditingController();
 
@@ -341,20 +351,14 @@ class _expensesState extends State<expenses> {
     );
   }
 
-  List<EventGuest?> selectedGuests = [];
-  List<MultiSelectItem<EventGuest?>?>? selectedGuestsShow = [];
-
-  List<MultiSelectItem<EventGuest>> selectGuests = [];
-
   multiselectGuest() {
     TextEditingController controller = TextEditingController();
     selectGuests.clear();
-    selectGuests.add(MultiSelectItem(EventGuest(), "All"));
+    selectGuests.add(MultiSelectItem(allGuest, "All"));
     widget.eventwallet.eventGuest!.forEach((element) {
       selectGuests.add(MultiSelectItem(element,
           "${element.name.toString()}  ${element!.email!.isEmpty ? "" : "(${element.email.toString()})"}"));
     });
-    logger.d(selectGuests.length);
 
     return Container(
       decoration: BoxDecoration(
@@ -388,36 +392,96 @@ class _expensesState extends State<expenses> {
                   fontSize: 15,
                   fontWeight: FontWeight.bold),
             ),
+            buttonIcon: Icon(
+              Icons.arrow_drop_down,
+              color: Colors.black,
+            ),
             initialChildSize: 0.4,
             listType: MultiSelectListType.LIST,
             searchable: true,
             isDismissible: true,
-            buttonText: Text("Include members"),
+            buttonText: Text("Include members (${selectedGuests.length})",
+                style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600)),
             title: Text("Members"),
             items: selectGuests,
+            initialValue: selectedGuestsInit,
             selectedColor: Colors.greenAccent,
             onConfirm: (values) {
-              selectedGuests = values;
-              selectedGuestsShow = values
-                  .map((e) => MultiSelectItem(e,
-                      "${e!.name.toString()}  ${e!.email!.isEmpty ? "" : "(${e.email.toString()})"}"))
-                  .toList();
-              values.forEach((element) {
-                logger.d((element as EventGuest).toJson());
-              });
+              bool prevflag = flagall;
+              if (values.contains(allGuest)) {
+                flagall = true;
+              } else {
+                flagall = false;
+              }
+              logger.d("flagall $flagall\n prevflag $prevflag");
+              if (flagall && !prevflag) {
+                setState(() {
+                  selectedGuests = selectGuests
+                      .where((element) => element.value != allGuest)
+                      .map((e) => e.value)
+                      .toList();
+                });
+                setState(() {
+                  selectedGuestsInit =
+                      selectGuests.map((e) => e.value).toList();
+                });
+              } else if (!flagall && prevflag) {
+                flagall = false;
+                setState(() {
+                  selectedGuests = [];
+                  selectedGuestsInit = [];
+                });
+              } else {
+                setState(() {
+                  selectedGuestsInit = values;
+                  selectedGuests =
+                      values.where((element) => element != allGuest).toList();
+                });
+                if (values.length != selectGuests.length) {
+                  flagall = false;
+                  setState(() {
+                    selectedGuestsInit = selectedGuestsInit
+                        .where((element) => element != allGuest)
+                        .toList();
+                  });
+                }
+              }
             },
             chipDisplay: MultiSelectChipDisplay(
+              scroll: true,
               items: selectedGuestsShow,
               textStyle: GoogleFonts.notoSans(
                   color: Colors.black,
                   fontSize: 15,
                   fontWeight: FontWeight.bold),
               decoration: BoxDecoration(),
-              onTap: (value) {
-                setState(() {
-                  selectedGuestsShow!.remove(value);
-                  selectedGuests.remove(value);
-                });
+              onTap: (e) {
+                if (e == allGuest) {
+                  flagall = false;
+                  setState(() {
+                    selectedGuestsInit = [];
+                  });
+                } else {
+                  if (selectedGuestsInit.contains(allGuest)) {
+                    flagall = false;
+                    setState(() {
+                      selectedGuestsInit = selectedGuestsInit
+                          .where((element) => element != allGuest)
+                          .toList();
+                    });
+                  }
+                  setState(() {
+                    selectedGuestsInit = selectedGuestsInit
+                        .where((element) => element != e)
+                        .toList();
+                    selectedGuests = selectedGuests
+                        .where((element) => element != e)
+                        .toList();
+                  });
+                }
               },
             ),
           ),
@@ -431,14 +495,4 @@ class _expensesState extends State<expenses> {
       child: Text("Activity"),
     );
   }
-}
-
-class Animal {
-  final int id;
-  final String name;
-
-  Animal({
-    required this.id,
-    required this.name,
-  });
 }

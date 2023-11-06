@@ -69,10 +69,10 @@ packages:
     dependency: transitive
     description:
       name: basic_utils
-      sha256: "1fb8c5493fc1b9500512b2e153c0b9bcc9e281621cde7f810420f4761be9e38d"
+      sha256: "2064b21d3c41ed7654bc82cc476fd65542e04d60059b74d5eed490a4da08fc6c"
       url: "https://pub.dev"
     source: hosted
-    version: "5.6.1"
+    version: "5.7.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -247,18 +247,18 @@ packages:
     dependency: transitive
     description:
       name: flutter_riverpod
-      sha256: bdba94be666ecb1beeb0f5a748d96cdd6a37215f27e6b48c7673b95cecb800c8
+      sha256: "305203d1578f6857675f9730568548b03900ce53afd319f4aa9d2fa943334dbe"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.4"
+    version: "2.4.5"
   flutter_slidable:
     dependency: "direct main"
     description:
       name: flutter_slidable
-      sha256: cc4231579e3eae41ae166660df717f4bad1359c87f4a4322ad8ba1befeb3d2be
+      sha256: "19ed4813003a6ff4e9c6bcce37e792a2a358919d7603b2b31ff200229191e44c"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   flutter_speed_dial:
     dependency: "direct main"
     description:
@@ -287,10 +287,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_svg
-      sha256: bfc7cc3c75fe1282e8ce2e056d8fd1533f1a6848b65c379b4a5e7a9b623d3371
+      sha256: d39e7f95621fc84376bc0f7d504f05c3a41488c562f4a8ad410569127507402c
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.8"
+    version: "2.0.9"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -425,10 +425,10 @@ packages:
     dependency: transitive
     description:
       name: mongo_dart_query
-      sha256: d9185804b24088b933248892c956b8c6962d079523946bdd8b5eef557dca0355
+      sha256: "4ed33795ee592c9b423894b04508d86f65a991c453576abeb05477ad416725ce"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.4"
+    version: "4.0.5"
   multi_select_bottom_sheet:
     dependency: "direct main"
     description:
@@ -497,10 +497,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_android
-      sha256: "6b8b19bd80da4f11ce91b2d1fb931f3006911477cec227cce23d3253d80df3f1"
+      sha256: e595b98692943b4881b219f0a9e3945118d3c16bd7e2813f98ec6e532d905f72
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.0"
+    version: "2.2.1"
   path_provider_foundation:
     dependency: transitive
     description:
@@ -609,10 +609,10 @@ packages:
     dependency: transitive
     description:
       name: riverpod
-      sha256: "2af3d127a6e4e34b89b8f1f018086f5ded04b8e538174f0510bba3e4c0d878b1"
+      sha256: "2e84315036e64c59affaff7443dea51247bc2fe704461a32f26a27986fb63d55"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.4"
+    version: "2.4.5"
   sasl_scram:
     dependency: transitive
     description:
@@ -862,10 +862,10 @@ packages:
     dependency: "direct main"
     description:
       name: xen_popup_card
-      sha256: "1e66d355785bb73e4289e730d9b1b74383e754ac336a6f53f9403e5536a2104d"
+      sha256: e36b9ea1ebac1fe97c2e1cf74b9f4e22a21235be4884a0cb7807c17925c8d12c
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.3+2"
   xml:
     dependency: transitive
     description:

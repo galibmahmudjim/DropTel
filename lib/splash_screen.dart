@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'Model/Mongodb.dart';
-import 'Obj/User.dart';
 
 class splash_screen extends StatefulWidget {
   const splash_screen({super.key});
@@ -16,24 +15,34 @@ class splash_screen extends StatefulWidget {
 }
 
 class _splash_screenState extends State<splash_screen> {
-  Future<Widget> checkLoggedIn() async {
+  // Future<Widget> checkLoggedIn() async {
+  //   await Mongodb.connect();
+  //   final String? id = await sharedPref.getID();
+  //   final String? name = await sharedPref.getName();
+  //   if (id != null && name != null) {
+  //     Future<dynamic> res = Mongodb.findUser(id.toString(), name.toString());
+  //     User? user;
+  //
+  //     await res.then((value) {
+  //       user = User.fromJson(value);
+  //     });
+  //     if (user != null) {
+  //       print(user!.toJson());
+  //
+  //       return HomePage(user: user!);
+  //     } else {
+  //       return HomePageLogin();
+  //     }
+  //   } else {
+  //     return HomePageLogin();
+  //   }
+  // }
+  Future<Widget> checkIn() async {
     await Mongodb.connect();
     final String? id = await sharedPref.getID();
     final String? name = await sharedPref.getName();
     if (id != null && name != null) {
-      Future<dynamic> res = Mongodb.findUser(id.toString(), name.toString());
-      User? user;
-
-      await res.then((value) {
-        user = User.fromJson(value);
-      });
-      if (user != null) {
-        print(user!.toJson());
-
-        return HomePage(user: user!);
-      } else {
-        return HomePageLogin();
-      }
+      return HomePage(id: id!, name: name!);
     } else {
       return HomePageLogin();
     }
@@ -48,7 +57,7 @@ class _splash_screenState extends State<splash_screen> {
       pageTransitionType: PageTransitionType.rightToLeft,
       splashTransition: SplashTransition.slideTransition,
       screenFunction: () async {
-        return checkLoggedIn();
+        return checkIn();
       },
     );
   }

@@ -12,11 +12,14 @@ import '../Obj/User.dart';
 import '../Obj/eventWallet.dart';
 import '../Widget/SearchBarWidget.dart';
 import '../Widget/bottomAppBar.dart';
+import '../homeLogin.dart';
 
 class HomePage extends StatefulWidget {
-  final User user;
+  final User? user;
+  final String? id;
+  final String? name;
 
-  const HomePage({required this.user});
+  const HomePage({this.user, this.id, this.name});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -29,16 +32,61 @@ class _HomePageState extends State<HomePage> {
 
   bool group = false;
   bool isLoading = false;
+  User user = User();
+  Future<void> checkLoggedIn() async {
+    await Mongodb.connect();
+    if (widget.id != null && widget.name != null) {
+      Future<dynamic> res =
+          Mongodb.findUser(widget.id.toString(), widget.name.toString());
 
-  Future<List<String>> fetchData() async {
-    // Simulate an asynchronous data fetch.
-    await Future.delayed(Duration(seconds: 2));
-    return ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
+      await res.then((value) {
+        if (value != null) {
+          setState(() {
+            isLoading = false;
+            user = User.fromJson(value);
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => HomePageLogin()));
+        }
+      });
+      if (user != null) {
+        print(user.toJson());
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomePageLogin()));
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => HomePageLogin()));
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    isLoading = true;
+    if (widget.user != null) {
+      isLoading = false;
+      user = widget.user!;
+    } else {
+      checkLoggedIn();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Mongodb.getAllEvents(widget.user.id.toString());
     double height = MediaQuery.of(context).size.height;
     double width = (MediaQuery.of(context).size.width);
 
@@ -99,8 +147,8 @@ class _HomePageState extends State<HomePage> {
                       child: FutureBuilder<dynamic>(
                         future: search
                             ? Mongodb.getAllEventsByTitle(
-                                widget.user.id.toString(), textControllertest)
-                            : Mongodb.getAllEvents(widget.user.id.toString()),
+                                user.id.toString(), textControllertest)
+                            : Mongodb.getAllEvents(user.id.toString()),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -145,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                                           MaterialPageRoute(
                                               builder: (context) => expenses(
                                                     eventwallet: event,
-                                                    user: widget.user,
+                                                    user: user,
                                                   )));
                                     },
                                     onLongPress: () {
@@ -290,7 +338,7 @@ class _HomePageState extends State<HomePage> {
       transitionDuration: const Duration(milliseconds: 500),
       openBuilder: (BuildContext context, VoidCallback _) {
         return NewEvent(
-          user: widget.user,
+          user: user,
         );
       },
       closedBuilder: (BuildContext context, VoidCallback openContainer) {

@@ -45,7 +45,6 @@ class _HomePageState extends State<HomePage> {
         isLoading = false;
       });
     });
-    print(temp);
     if (widget.id != null && widget.name != null) {
       Future<dynamic> res =
           Mongodb.findUser(widget.id.toString(), widget.name.toString());

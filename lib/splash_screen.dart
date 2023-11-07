@@ -5,8 +5,6 @@ import 'package:droptel/homeLogin.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:page_transition/page_transition.dart';
 
-import 'Model/Mongodb.dart';
-
 class splash_screen extends StatefulWidget {
   const splash_screen({super.key});
 
@@ -38,7 +36,6 @@ class _splash_screenState extends State<splash_screen> {
   //   }
   // }
   Future<Widget> checkIn() async {
-    await Mongodb.connect();
     final String? id = await sharedPref.getID();
     final String? name = await sharedPref.getName();
     if (id != null && name != null) {

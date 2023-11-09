@@ -1,5 +1,4 @@
 import 'package:animations/animations.dart';
-import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Pages/NewEvent.dart';
 import 'package:droptel/Widget/SearchWidget.dart';
 import 'package:flutter/material.dart';
@@ -121,7 +120,6 @@ class _HomePageState extends State<HomePage> {
           child: RefreshIndicator(
               onRefresh: () async {
                 setState(() {
-                  logger.d(user.toJson());
                   checkLoggedIn();
                 });
               },

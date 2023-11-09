@@ -1,19 +1,17 @@
 import 'dart:core';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Obj/EventGuest.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Widget/loading.dart';
-import 'package:droptel/Widget/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 import '../../Obj/User.dart';
+import '../../Widget/snackbar.dart';
 
 class expenses extends StatefulWidget {
   final eventWallet eventwallet;
@@ -54,12 +52,31 @@ class _expensesState extends State<expenses> {
   // new state end
 
   TextEditingController statementNameController = TextEditingController();
+  TextEditingController amountTextController = TextEditingController();
+  TextEditingController customCalculationTitleController =
+      TextEditingController();
+  TextEditingController operationValueController = TextEditingController();
+  int selectedValueOperation = 0;
+  String? selectedValueOperationString;
+  double totalAmount = 0;
+  int memberCount = 0;
+  double totalAmountPerPerson = 0;
+  double valueofOperation = 0;
+  double amount = 0;
+  bool isReview = false;
+  bool interlock = false;
 
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
 
+    if (interlock) {
+      isReview = true;
+      interlock = false;
+    } else {
+      isReview = false;
+    }
     return Scaffold(
       appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black),
@@ -84,7 +101,7 @@ class _expensesState extends State<expenses> {
     var formattedDate = DateFormat('HH:mm a\nyyyy-MMM-dd').format(date);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.indigo[800],
+        color: Colors.indigo[500],
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(10), topRight: Radius.circular(10)),
       ),
@@ -346,8 +363,6 @@ class _expensesState extends State<expenses> {
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Widget newStatement() {
-    TextEditingController controller = TextEditingController();
-
     return Form(
       key: _formKey,
       child: Column(
@@ -374,14 +389,13 @@ class _expensesState extends State<expenses> {
           SizedBox(
             height: 10,
           ),
-          AddExpensesButton(),
+          AddExpensesButtonStatement(),
         ],
       ),
     );
   }
 
   multiselectGuest() {
-    TextEditingController controller = TextEditingController();
     selectGuests.clear();
     selectGuests.add(MultiSelectItem(allGuest, "All"));
     widget.eventwallet.eventGuest!.forEach((element) {
@@ -442,7 +456,6 @@ class _expensesState extends State<expenses> {
               } else {
                 flagall = false;
               }
-              logger.d("flagall $flagall\n prevflag $prevflag");
               if (flagall && !prevflag) {
                 setState(() {
                   selectedGuests = selectGuests
@@ -557,7 +570,8 @@ class _expensesState extends State<expenses> {
                     if (dropdownValue == "Payment") {
                       setState(() {
                         actionSelected = 1;
-                        ammountFlag = true;
+                        if (amountTextController.text.isEmpty)
+                          ammountFlag = true;
                       });
                     } else {
                       setState(() {
@@ -581,7 +595,6 @@ class _expensesState extends State<expenses> {
   }
 
   AddTitle() {
-    TextEditingController statementNameController = TextEditingController();
     return Container(
       margin: EdgeInsets.only(left: 10, right: 10),
       padding: EdgeInsets.only(left: 10, right: 10),
@@ -647,23 +660,41 @@ class _expensesState extends State<expenses> {
           child: IntrinsicHeight(
             child: Row(
               children: [
+                dividedMemberCheckbox(),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Container(
+          decoration: BoxDecoration(
+              border: Border(
+            top: BorderSide(width: 1, color: Color(0x74F1EBEB)),
+          )),
+          margin: EdgeInsets.only(left: 10, right: 10),
+          width: width,
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
                 CustomCalculateButton(),
               ],
             ),
           ),
         ),
         if (checkboxValue) CustomCalculationProperty(),
+        if (isReview) reviewStatement(),
       ],
     );
   }
 
   CustomCalculationProperty() {
-    TextEditingController customCalculationTitleController =
-        TextEditingController();
     return Card(
       elevation: 1,
+      color: Colors.indigo[500]?.withOpacity(0.7),
       child: Container(
-        decoration: BoxDecoration(),
+        decoration: BoxDecoration(color: Colors.transparent),
         padding: EdgeInsets.only(left: 10, right: 10),
         margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
         width: width,
@@ -681,29 +712,29 @@ class _expensesState extends State<expenses> {
                 style: TextStyle(
                   fontSize: 15,
                   fontFamily: GoogleFonts.poppins(
-                    color: Color(0xFF464647),
+                    color: Colors.white,
                   ).fontFamily,
                   fontStyle: FontStyle.normal,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF464647),
+                  color: Colors.white,
                 ),
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.black26,
-                      width: 0.1,
+                      color: Colors.white,
+                      width: 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.black26,
-                      width: 0.1,
+                      color: Colors.white,
+                      width: 1,
                     ),
                   ),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.black26,
-                      width: 0.1,
+                      color: Colors.white,
+                      width: 1,
                     ),
                   ),
                   errorStyle: TextStyle(height: 0, fontSize: 0),
@@ -712,7 +743,7 @@ class _expensesState extends State<expenses> {
                     fontFamily: GoogleFonts.prompt().fontFamily,
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
-                    color: Color(0x71464647),
+                    color: Colors.white.withOpacity(0.5),
                   ),
                 ),
               ),
@@ -734,65 +765,235 @@ class _expensesState extends State<expenses> {
                 ],
               ),
             ),
+            SizedBox(
+              height: 20,
+            ),
           ],
         ),
       ),
     );
   }
 
-  TextEditingController operationValueController = TextEditingController();
+  reviewStatement() {
+    return Card(
+        elevation: 1,
+        color: Colors.indigo[500]?.withOpacity(0.7),
+        child: Container(
+            decoration: BoxDecoration(color: Colors.transparent),
+            padding: EdgeInsets.only(left: 10, right: 10),
+            margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+            width: width,
+            child: Container(
+              padding:
+                  EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1,
+                ),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  children: [
+                    Container(
+                      width: width * 0.25,
+                      child: Text(statementNameController.text.toString(),
+                          style: GoogleFonts.robotoMono(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                        child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Amount",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                amount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (checkboxValue)
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: Container(
+                                child: Text(
+                                  customCalculationTitleController.text
+                                      .toString(),
+                                  style: GoogleFonts.robotoMono(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                              Container(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      "${selectedValueOperation == 1 ? "%" : selectedValueOperation == 2 ? "+" : selectedValueOperation == 3 ? "-" : selectedValueOperation == 4 ? "x" : "/"}",
+                                      style: GoogleFonts.robotoMono(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Text(
+                                      valueofOperation.toString(),
+                                      style: GoogleFonts.robotoMono(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalAmount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total Members",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                memberCount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total Per Person",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalAmountPerPerson.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ))
+                  ],
+                ),
+              ),
+            )));
+  }
+
   OperationValue() {
     return Container(
-        margin: EdgeInsets.only(left: 10, right: 10),
         child: TextFormField(
-          controller: operationValueController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter Value';
-            }
-            return null;
-          },
-          inputFormatters: <TextInputFormatter>[
-            FilteringTextInputFormatter.digitsOnly
-          ],
-          decoration: InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.black26,
-                width: 0.1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.black26,
-                width: 0.1,
-              ),
-            ),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Colors.black26,
-                width: 0.1,
-              ),
-            ),
-            errorStyle: TextStyle(height: 0, fontSize: 0),
-            hintText: 'Value',
-            hintStyle: TextStyle(
-              fontFamily: GoogleFonts.prompt().fontFamily,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-              color: Color(0x71464647),
-            ),
+      controller: operationValueController,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter Value';
+        }
+        return null;
+      },
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.white,
+            width: 1,
           ),
-          style: TextStyle(
-            fontSize: 15,
-            fontFamily: GoogleFonts.poppins(
-              color: Color(0xFF464647),
-            ).fontFamily,
-            fontStyle: FontStyle.normal,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF464647),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.white,
+            width: 1,
           ),
-        ));
+        ),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Colors.white,
+            width: 1,
+          ),
+        ),
+        errorStyle: TextStyle(height: 0, fontSize: 0),
+        hintText: 'Value',
+        hintStyle: TextStyle(
+          fontFamily: GoogleFonts.prompt().fontFamily,
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          color: Colors.white.withOpacity(0.5),
+        ),
+      ),
+      style: TextStyle(
+        fontSize: 15,
+        fontFamily: GoogleFonts.poppins(
+          color: Colors.white,
+        ).fontFamily,
+        fontStyle: FontStyle.normal,
+        fontWeight: FontWeight.w900,
+        color: Colors.white,
+      ),
+    ));
   }
 
   final List<String> items = [
@@ -802,7 +1003,6 @@ class _expensesState extends State<expenses> {
     'Multiplication (x)',
     'Division (/)',
   ];
-  String? selectedValueOperation;
   dropDownMenuCalculation() {
     return Container(
       padding: EdgeInsets.only(
@@ -810,9 +1010,10 @@ class _expensesState extends State<expenses> {
       ),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.black26,
-          width: 0.1,
+          color: Colors.white,
+          width: 1,
         ),
+        borderRadius: BorderRadius.all(Radius.circular(3)),
       ),
       child: Column(
         children: [
@@ -823,7 +1024,7 @@ class _expensesState extends State<expenses> {
               hint: Text(
                 'Select Operation',
                 style: GoogleFonts.poppins(
-                    color: Colors.black,
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 13,
                     fontWeight: FontWeight.bold),
               ),
@@ -833,20 +1034,35 @@ class _expensesState extends State<expenses> {
                         child: Text(
                           item,
                           style: GoogleFonts.poppins(
-                              color: Colors.black,
+                              color: Colors.white,
                               fontSize: 13,
                               fontWeight: FontWeight.bold),
                         ),
                       ))
                   .toList(),
-              value: selectedValueOperation,
+              value: selectedValueOperationString,
               onChanged: (String? value) {
                 setState(() {
-                  selectedValueOperation = value;
+                  selectedValueOperationString = value!;
+                  if (value == "Percentage (%)") {
+                    selectedValueOperation = 1;
+                  } else if (value == "Addition (+)") {
+                    selectedValueOperation = 2;
+                  } else if (value == "Subtraction (-)") {
+                    selectedValueOperation = 3;
+                  } else if (value == "Multiplication (x)") {
+                    selectedValueOperation = 4;
+                  } else if (value == "Division (/)") {
+                    selectedValueOperation = 5;
+                  }
                 });
               },
               dropdownStyleData: DropdownStyleData(
                 width: width * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.indigo[500],
+                  borderRadius: BorderRadius.all(Radius.circular(3)),
+                ),
               ),
               buttonStyleData: const ButtonStyleData(
                 padding: EdgeInsets.symmetric(horizontal: 16),
@@ -854,6 +1070,55 @@ class _expensesState extends State<expenses> {
               ),
               menuItemStyleData: const MenuItemStyleData(
                 height: 40,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool dividedMembers = false;
+  dividedMemberCheckbox() {
+    return Expanded(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Container(
+            alignment: Alignment.centerRight,
+            child: Checkbox(
+                side: BorderSide(
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1,
+                ),
+                checkColor: Colors.white,
+                value: dividedMembers,
+                activeColor: Colors.grey,
+                onChanged: (value) {
+                  setState(() {
+                    dividedMembers = value!;
+                  });
+                }),
+          ),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(left: width * 0.01),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    dividedMembers = !dividedMembers;
+                  });
+                },
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Divide among members?",
+                    style: GoogleFonts.notoSans(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ),
           ),
@@ -871,6 +1136,10 @@ class _expensesState extends State<expenses> {
           Container(
             alignment: Alignment.centerRight,
             child: Checkbox(
+                side: BorderSide(
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1,
+                ),
                 checkColor: Colors.white,
                 value: checkboxValue,
                 activeColor: Colors.grey,
@@ -924,12 +1193,10 @@ class _expensesState extends State<expenses> {
             Expanded(
               child: Container(
                 child: TextFormField(
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
-                  controller: statementNameController,
+                  keyboardType: TextInputType.number,
+                  controller: amountTextController,
                   onChanged: (value) {
-                    if (value.isEmpty) {
+                    if (value.isEmpty && actionSelected == 1) {
                       setState(() {
                         ammountFlag = true;
                       });
@@ -949,11 +1216,11 @@ class _expensesState extends State<expenses> {
                   style: TextStyle(
                     fontSize: 15,
                     fontFamily: GoogleFonts.prompt(
-                      color: Color(0xFF464647),
+                      color: Colors.white,
                     ).fontFamily,
                     fontStyle: FontStyle.normal,
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF464647),
+                    color: Colors.white,
                   ),
                   textAlignVertical: TextAlignVertical.bottom,
                   textAlign: TextAlign.center,
@@ -974,13 +1241,14 @@ class _expensesState extends State<expenses> {
             !ammountFlag
                 ? Container()
                 : Container(
+                    color: Colors.transparent,
                     child: IconButton(
-                        highlightColor: Colors.white,
+                        highlightColor: Colors.black,
                         onPressed: () {
-                          // snackBar(
-                          //     context,
-                          //     "Payment complete if a single member is selected or all included members have the same pending payment amount.",
-                          //     Colors.redAccent);
+                          snackBar(
+                              context,
+                              "Payment complete if a single member is selected or all included members have the same pending payment amount.",
+                              Colors.redAccent);
                         },
                         icon: FaIcon(
                           FontAwesomeIcons.handshake,
@@ -992,11 +1260,76 @@ class _expensesState extends State<expenses> {
     );
   }
 
-  AddExpensesButton() {
+  AddExpensesButtonStatement() {
     return Container(
-      margin: EdgeInsets.only(left: 10, right: 10),
+      margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          if (selectedGuests.isEmpty || selectedGuests == null) {
+            snackBar(
+                context, "Please select at least one member", Colors.redAccent);
+            return;
+          }
+          if (statementNameController.text.isEmpty ||
+              statementNameController == null) {
+            snackBar(context, "Please enter Title", Colors.redAccent);
+            return;
+          }
+          if ((amountTextController.text.isEmpty ||
+                  amountTextController == null) &&
+              actionSelected == 2) {
+            snackBar(context, "Please enter Amount", Colors.redAccent);
+            return;
+          }
+
+          amount = double.parse(amountTextController.text);
+          if (checkboxValue) {
+            if (customCalculationTitleController.text.isEmpty ||
+                customCalculationTitleController.text == null) {
+              snackBar(context, "Please enter Custom Calculation Title",
+                  Colors.redAccent);
+              return;
+            }
+
+            if (selectedValueOperationString == null &&
+                selectedValueOperation == 0) {
+              snackBar(context, "Please select Operation", Colors.redAccent);
+              return;
+            }
+            if (operationValueController.text.isEmpty ||
+                operationValueController.text == null) {
+              snackBar(
+                  context, "Please enter Operation Value", Colors.redAccent);
+              return;
+            }
+            valueofOperation = double.parse(operationValueController.text);
+            if (selectedValueOperation == 1) {
+              totalAmount = amount + (amount * valueofOperation / 100);
+            } else if (selectedValueOperation == 2) {
+              totalAmount = amount + valueofOperation;
+            } else if (selectedValueOperation == 3) {
+              totalAmount = amount - valueofOperation;
+            } else if (selectedValueOperation == 4) {
+              totalAmount = amount * valueofOperation;
+            } else if (selectedValueOperation == 5) {
+              totalAmount = amount / valueofOperation;
+            }
+          } else {
+            totalAmount = amount;
+          }
+          totalAmount = double.parse(totalAmount.toStringAsFixed(2));
+          memberCount = selectedGuests.length;
+          if (dividedMembers)
+            totalAmountPerPerson = totalAmount / memberCount;
+          else
+            totalAmountPerPerson = totalAmount;
+          totalAmountPerPerson =
+              double.parse(totalAmountPerPerson.toStringAsFixed(2));
+
+          setState(() {
+            interlock = true;
+          });
+        },
         child: Text(
           "Add Expenses",
           style: GoogleFonts.notoSans(

@@ -532,6 +532,23 @@ class _expensesState extends State<expenses> {
           children: [
             Expanded(
               child: DropdownMenu<String>(
+                inputDecorationTheme: InputDecorationTheme(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
+                  errorStyle: TextStyle(height: 0, fontSize: 0),
+                ),
+                trailingIcon: Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.white,
+                ),
+                textStyle: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold),
                 initialSelection: list.first,
                 onSelected: (String? value) {
                   // This is called when the user selects an item.
@@ -623,7 +640,7 @@ class _expensesState extends State<expenses> {
         Container(
           decoration: BoxDecoration(
               border: Border(
-            top: BorderSide(width: 1, color: Color(0x74706B6B)),
+            top: BorderSide(width: 1, color: Color(0x74F1EBEB)),
           )),
           margin: EdgeInsets.only(left: 10, right: 10),
           width: width,
@@ -877,7 +894,7 @@ class _expensesState extends State<expenses> {
                   child: Text(
                     "Custom Calculation",
                     style: GoogleFonts.notoSans(
-                        color: Colors.black,
+                        color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.bold),
                   ),
@@ -897,7 +914,7 @@ class _expensesState extends State<expenses> {
         padding: EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.black26,
+            color: Colors.white.withOpacity(0.5),
             width: 1.2,
           ),
           borderRadius: BorderRadius.all(Radius.circular(3)),
@@ -928,7 +945,7 @@ class _expensesState extends State<expenses> {
                     }
                     return null;
                   },
-                  cursorColor: Colors.black,
+                  cursorColor: Colors.white,
                   style: TextStyle(
                     fontSize: 15,
                     fontFamily: GoogleFonts.prompt(
@@ -948,7 +965,7 @@ class _expensesState extends State<expenses> {
                       fontFamily: GoogleFonts.prompt().fontFamily,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
-                      color: Color(0x71464647),
+                      color: Colors.white.withOpacity(0.8),
                     ),
                   ),
                 ),
@@ -958,13 +975,17 @@ class _expensesState extends State<expenses> {
                 ? Container()
                 : Container(
                     child: IconButton(
+                        highlightColor: Colors.white,
                         onPressed: () {
-                          snackBar(
-                              context,
-                              "Payment complete if a single member is selected or all included members have the same pending payment amount.",
-                              Colors.redAccent);
+                          // snackBar(
+                          //     context,
+                          //     "Payment complete if a single member is selected or all included members have the same pending payment amount.",
+                          //     Colors.redAccent);
                         },
-                        icon: FaIcon(FontAwesomeIcons.handshake)))
+                        icon: FaIcon(
+                          FontAwesomeIcons.handshake,
+                          color: Colors.white,
+                        )))
           ],
         ),
       ),

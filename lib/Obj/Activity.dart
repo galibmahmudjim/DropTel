@@ -1,11 +1,19 @@
 import 'Statement.dart';
 
 class Activity {
+  String? _sId;
   String? _title;
   String? _dateTime;
   List<Statement>? _statements;
 
-  Activity({String? title, String? dateTime, List<Statement>? statements}) {
+  Activity(
+      {String? sId,
+      String? title,
+      String? dateTime,
+      List<Statement>? statements}) {
+    if (sId != null) {
+      this._sId = sId;
+    }
     if (title != null) {
       this._title = title;
     }
@@ -17,6 +25,8 @@ class Activity {
     }
   }
 
+  String? get sId => _sId;
+  set sId(String? sId) => _sId = sId;
   String? get title => _title;
   set title(String? title) => _title = title;
   String? get dateTime => _dateTime;
@@ -25,6 +35,7 @@ class Activity {
   set statements(List<Statement>? statements) => _statements = statements;
 
   Activity.fromJson(Map<String, dynamic> json) {
+    _sId = json['_id'];
     _title = json['Title'];
     _dateTime = json['DateTime'];
     if (json['Statements'] != null) {
@@ -37,6 +48,7 @@ class Activity {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['_id'] = this._sId;
     data['Title'] = this._title;
     data['DateTime'] = this._dateTime;
     if (this._statements != null) {

@@ -1,29 +1,39 @@
-import 'EventGuest.dart';
+import 'package:droptel/Obj/PersonalTransition.dart';
 
 class Statement {
+  String? _sId;
   String? _title;
-  int? _amount;
   String? _type;
   String? _dateTime;
   bool? _isCustomOperation;
   String? _operation;
-  int? _operationValue;
-  List<EventGuest>? _members;
+  double? _amount;
+  double? _operationValue;
+  double? _total;
+  int? _countMembers;
+  double? _totalPerPerson;
+  double? _totalWithMembers;
+  List<PersonalTransition>? _members = [];
 
   Statement(
-      {String? title,
-      int? amount,
+      {String? sId,
+      String? title,
       String? type,
       bool? isCustomOperation,
       String? dateTime,
       String? operation,
-      int? operationValue,
-      List<EventGuest>? member}) {
+      double? amount,
+      double? operationValue,
+      double? total,
+      int? countMembers,
+      double? totalPerPerson,
+      double? totalWithMembers,
+      List<PersonalTransition>? member}) {
+    if (sId != null) {
+      this._sId = sId;
+    }
     if (title != null) {
       this._title = title;
-    }
-    if (amount != null) {
-      this._amount = amount;
     }
     if (type != null) {
       this._type = type;
@@ -37,18 +47,31 @@ class Statement {
     if (operation != null) {
       this._operation = operation;
     }
+    if (amount != null) {
+      this._amount = amount;
+    }
     if (operationValue != null) {
       this._operationValue = operationValue;
     }
-    if (member != null) {
-      this._members = member;
+    if (total != null) {
+      this._total = total;
     }
+    if (countMembers != null) {
+      this._countMembers = countMembers;
+    }
+    if (totalPerPerson != null) {
+      this._totalPerPerson = totalPerPerson;
+    }
+    if (totalWithMembers != null) {
+      this._totalWithMembers = totalWithMembers;
+    }
+    this._members = member;
   }
 
+  String? get sId => _sId;
+  set sId(String? sId) => _sId = sId;
   String? get title => _title;
   set title(String? title) => _title = title;
-  int? get amount => _amount;
-  set amount(int? amount) => _amount = amount;
   String? get type => _type;
   set type(String? type) => _type = type;
   String? get dateTime => _dateTime;
@@ -58,39 +81,62 @@ class Statement {
       _isCustomOperation = isCustomOperation;
   String? get operation => _operation;
   set operation(String? operation) => _operation = operation;
-  int? get operationValue => _operationValue;
-  set operationValue(int? operationValue) => _operationValue = operationValue;
-  List<EventGuest>? get members => _members;
-  set eventGuest(List<EventGuest>? members) => _members = members;
+
+  double? get amount => _amount;
+  set amount(double? amount) => _amount = amount;
+  double? get operationValue => _operationValue;
+  set operationValue(double? operationValue) =>
+      _operationValue = operationValue;
+  double? get total => _total;
+  set total(double? total) => _total = total;
+  int? get countMembers => _countMembers;
+  set countMembers(int? countMembers) => _countMembers = countMembers;
+  double? get totalPerPerson => _totalPerPerson;
+  set totalPerPerson(double? totalPerPerson) =>
+      _totalPerPerson = totalPerPerson;
+  double? get totalWithMembers => _totalWithMembers;
+  set totalWithMembers(double? totalWithMembers) =>
+      _totalWithMembers = totalWithMembers;
+
+  List<PersonalTransition?> get members => _members ?? [];
+  set eventGuest(List<PersonalTransition> members) => _members = members;
 
   Statement.fromJson(Map<String, dynamic> json) {
+    _sId = json['_id'];
     _title = json['Title'];
-    _amount = json['Amount'];
     _type = json['Type'];
     _isCustomOperation = json['isCustomOperation'];
     _operation = json['Operation'];
     _dateTime = json['DateTime'];
+    _amount = json['amount'];
     _operationValue = json['operationValue'];
+    _total = json['total'];
+    _countMembers = json['countMembers'];
+    _totalPerPerson = json['totalPerPerson'];
+    _totalWithMembers = json['totalWithMembers'];
     if (json['EventGuest'] != null) {
-      _members = <EventGuest>[];
+      _members = <PersonalTransition>[];
       json['Members'].forEach((v) {
-        _members!.add(new EventGuest.fromJson(v));
+        _members?.add(new PersonalTransition.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['_id'] = this._sId;
     data['Title'] = this._title;
-    data['Amount'] = this._amount;
     data['Type'] = this._type;
     data['isCustomOperation'] = this._isCustomOperation;
     data['DateTime'] = this._dateTime;
     data['Operation'] = this._operation;
+    data['amount'] = this._amount;
     data['operationValue'] = this._operationValue;
-    if (this._members != null) {
-      data['Members'] = this._members!.map((v) => v.toJson()).toList();
-    }
+    data['total'] = this._total;
+    data['countMembers'] = this._countMembers;
+    data['totalPerPerson'] = this._totalPerPerson;
+    data['totalWithMembers'] = this._totalWithMembers;
+    data['Members'] = this._members?.map((v) => v.toJson()).toList();
     return data;
   }
 }

@@ -1,7 +1,11 @@
 import 'dart:core';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/EventGuest.dart';
+import 'package:droptel/Obj/PersonalTransition.dart';
+import 'package:droptel/Obj/Statement.dart';
+import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +13,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:objectid/objectid.dart';
 
+import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 import '../../Widget/snackbar.dart';
 
@@ -48,7 +54,6 @@ class _expensesState extends State<expenses> {
   var guestListSelected = [];
   String? dropdownValue;
   int actionSelected = 1;
-  final _multiSelectKey = GlobalKey<FormFieldState>();
   // new state end
 
   TextEditingController statementNameController = TextEditingController();
@@ -60,6 +65,7 @@ class _expensesState extends State<expenses> {
   String? selectedValueOperationString;
   double totalAmount = 0;
   int memberCount = 0;
+  double totalWithPerson = 0;
   double totalAmountPerPerson = 0;
   double valueofOperation = 0;
   double amount = 0;
@@ -352,8 +358,12 @@ class _expensesState extends State<expenses> {
               ],
             ),
             isLoading
-                ? loading(
-                    heightBox: double.maxFinite, widthBox: double.maxFinite)
+                ? Opacity(
+                    opacity: 0.5,
+                    child: loading(
+                        heightBox: double.maxFinite,
+                        widthBox: double.maxFinite),
+                  )
                 : SizedBox(),
           ],
         ),
@@ -400,7 +410,7 @@ class _expensesState extends State<expenses> {
     selectGuests.add(MultiSelectItem(allGuest, "All"));
     widget.eventwallet.eventGuest!.forEach((element) {
       selectGuests.add(MultiSelectItem(element,
-          "${element.name.toString()}  ${element!.email!.isEmpty ? "" : "(${element.email.toString()})"}"));
+          "${element.name.toString()}  ${element.email!.isEmpty ? "" : "(${element.email.toString()})"}"));
     });
 
     return Container(
@@ -937,6 +947,29 @@ class _expensesState extends State<expenses> {
                             ),
                           ],
                         ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total with members",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalWithPerson.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ))
                   ],
@@ -1265,27 +1298,23 @@ class _expensesState extends State<expenses> {
       margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
       child: ElevatedButton(
         onPressed: () {
-          if (selectedGuests.isEmpty || selectedGuests == null) {
+          if (selectedGuests.isEmpty) {
             snackBar(
                 context, "Please select at least one member", Colors.redAccent);
             return;
           }
-          if (statementNameController.text.isEmpty ||
-              statementNameController == null) {
+          if (statementNameController.text.isEmpty) {
             snackBar(context, "Please enter Title", Colors.redAccent);
             return;
           }
-          if ((amountTextController.text.isEmpty ||
-                  amountTextController == null) &&
-              actionSelected == 2) {
+          if ((amountTextController.text.isEmpty) && actionSelected == 2) {
             snackBar(context, "Please enter Amount", Colors.redAccent);
             return;
           }
 
           amount = double.parse(amountTextController.text);
           if (checkboxValue) {
-            if (customCalculationTitleController.text.isEmpty ||
-                customCalculationTitleController.text == null) {
+            if (customCalculationTitleController.text.isEmpty) {
               snackBar(context, "Please enter Custom Calculation Title",
                   Colors.redAccent);
               return;
@@ -1296,8 +1325,7 @@ class _expensesState extends State<expenses> {
               snackBar(context, "Please select Operation", Colors.redAccent);
               return;
             }
-            if (operationValueController.text.isEmpty ||
-                operationValueController.text == null) {
+            if (operationValueController.text.isEmpty) {
               snackBar(
                   context, "Please enter Operation Value", Colors.redAccent);
               return;
@@ -1325,18 +1353,30 @@ class _expensesState extends State<expenses> {
             totalAmountPerPerson = totalAmount;
           totalAmountPerPerson =
               double.parse(totalAmountPerPerson.toStringAsFixed(2));
+          totalWithPerson = totalAmountPerPerson * memberCount;
+          totalWithPerson = double.parse(totalWithPerson.toStringAsFixed(2));
+          if (isReview) {
+            processStatement(
+                statementNameController.text.toString(),
+                customCalculationTitleController.text.toString(),
+                amount,
+                valueofOperation,
+                totalAmount,
+                totalAmountPerPerson,
+                memberCount);
+          }
 
           setState(() {
             interlock = true;
           });
         },
         child: Text(
-          "Add Expenses",
+          "${isReview ? "Add Statement" : "Review"}",
           style: GoogleFonts.notoSans(
               color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
-          primary: Colors.redAccent,
+          backgroundColor: Colors.redAccent,
           padding: EdgeInsets.only(
             top: 15,
             bottom: 15,
@@ -1349,5 +1389,82 @@ class _expensesState extends State<expenses> {
         ),
       ),
     );
+  }
+
+  Future<void> processStatement(
+      String string,
+      String string2,
+      double amount,
+      double valueofOperation,
+      double totalAmount,
+      double totalAmountPerPerson,
+      int memberCount) async {
+    double totalWithMembers = totalAmountPerPerson * memberCount;
+    totalWithMembers = double.parse(totalWithMembers.toStringAsFixed(2));
+    List<PersonalTransition> personalTransition = selectedGuests.map((e) {
+      return PersonalTransition(
+        sId: ObjectId().toString(),
+        type: actionSelected == 1 ? "Payment" : "Expenditure",
+        member: e,
+        amount: totalAmountPerPerson,
+      );
+    }).toList();
+    DateTime now = DateTime.now();
+    Statement statement = Statement(
+      sId: ObjectId().toString(),
+      title: string,
+      type: actionSelected == 1 ? "Payment" : "Expenditure",
+      isCustomOperation: checkboxValue,
+      dateTime: now.toString(),
+      operation: selectedValueOperationString,
+      amount: amount,
+      operationValue: valueofOperation,
+      total: totalAmount,
+      countMembers: memberCount,
+      totalPerPerson: totalAmountPerPerson,
+      totalWithMembers: totalWithMembers,
+      member: personalTransition,
+    );
+
+    isLoading = true;
+    Future<dynamic>? resultWallet =
+        Mongodb.FindEventDetails(widget.eventwallet.sId!);
+    bool walletflag = false;
+    Wallet wallet = Wallet();
+    resultWallet
+        ?.then((value) => {
+              if (value != null)
+                {
+                  wallet = Wallet.fromJson(value),
+                  wallet.statements!.add(statement),
+                  logger.i(wallet.toJson()),
+                  walletflag = true,
+                }
+              else
+                {
+                  walletflag = false,
+                }
+            })
+        .timeout(Duration(seconds: 10), onTimeout: () {
+      setState(() {
+        isLoading = false;
+      });
+      return snackBar(context, "Something went wrong", Colors.redAccent);
+    });
+
+    if (!walletflag) {
+      String id = ObjectId().toString();
+      wallet = Wallet(
+        sId: id,
+        eventID: widget.eventwallet.sId,
+        eventName: widget.eventwallet.title,
+        dateTime: now.toString(),
+        title: widget.eventwallet.title,
+        type: selectedGuests.length == 1 ? "Single" : "Group",
+        statements: [statement],
+        activities: null,
+      );
+    }
+    isLoading = false;
   }
 }

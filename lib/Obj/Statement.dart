@@ -1,13 +1,11 @@
+import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/PersonalTransition.dart';
 
-class Statement {
-  String? _sId;
-  String? _title;
-  String? _type;
-  String? _dateTime;
+class Statement extends ActivityList {
   bool? _isCustomOperation;
   String? _operation;
   double? _amount;
+  String? _statementType;
   double? _operationValue;
   double? _total;
   int? _countMembers;
@@ -19,6 +17,7 @@ class Statement {
       {String? sId,
       String? title,
       String? type,
+      String? statementType,
       bool? isCustomOperation,
       String? dateTime,
       String? operation,
@@ -30,16 +29,19 @@ class Statement {
       double? totalWithMembers,
       List<PersonalTransition>? member}) {
     if (sId != null) {
-      this._sId = sId;
+      super.sId = sId;
     }
     if (title != null) {
-      this._title = title;
+      super.title = title;
     }
     if (type != null) {
-      this._type = type;
+      super.type = type;
+    }
+    if (statementType != null) {
+      this._statementType = statementType;
     }
     if (dateTime != null) {
-      this._dateTime = dateTime;
+      super.dateTime = dateTime;
     }
     if (isCustomOperation != null) {
       this._isCustomOperation = isCustomOperation;
@@ -68,14 +70,16 @@ class Statement {
     this._members = member;
   }
 
-  String? get sId => _sId;
-  set sId(String? sId) => _sId = sId;
-  String? get title => _title;
-  set title(String? title) => _title = title;
-  String? get type => _type;
-  set type(String? type) => _type = type;
-  String? get dateTime => _dateTime;
-  set dateTime(String? dateTime) => _dateTime = dateTime;
+  String? get sId => super.sId;
+  set sId(String? sId) => super.sId = sId;
+  String? get title => super.title;
+  set title(String? title) => super.title = title;
+  String? get type => super.type;
+  set type(String? type) => super.type = type;
+  String? get statementType => _statementType;
+  set statementType(String? statementType) => _statementType = statementType;
+  String? get dateTime => super.dateTime;
+  set dateTime(String? dateTime) => super.dateTime = dateTime;
   bool? get isCustomOperation => _isCustomOperation;
   set isCustomOperation(bool? isCustomOperation) =>
       _isCustomOperation = isCustomOperation;
@@ -102,19 +106,20 @@ class Statement {
   set eventGuest(List<PersonalTransition> members) => _members = members;
 
   Statement.fromJson(Map<String, dynamic> json) {
-    _sId = json['_id'];
-    _title = json['Title'];
-    _type = json['Type'];
+    super.sId = json['_id'];
+    super.title = json['Title'];
+    super.type = json['Type'];
+    _statementType = json['statementType'];
     _isCustomOperation = json['isCustomOperation'];
     _operation = json['Operation'];
-    _dateTime = json['DateTime'];
+    super.dateTime = json['DateTime'];
     _amount = json['amount'];
     _operationValue = json['operationValue'];
     _total = json['total'];
     _countMembers = json['countMembers'];
     _totalPerPerson = json['totalPerPerson'];
     _totalWithMembers = json['totalWithMembers'];
-    if (json['EventGuest'] != null) {
+    if (json['Members'] != null) {
       _members = <PersonalTransition>[];
       json['Members'].forEach((v) {
         _members?.add(new PersonalTransition.fromJson(v));
@@ -124,11 +129,12 @@ class Statement {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['_id'] = this._sId;
-    data['Title'] = this._title;
-    data['Type'] = this._type;
+    data['_id'] = super.sId;
+    data['Title'] = super.title;
+    data['Type'] = super.type;
+    data['statementType'] = this._statementType;
     data['isCustomOperation'] = this._isCustomOperation;
-    data['DateTime'] = this._dateTime;
+    data['DateTime'] = super.dateTime;
     data['Operation'] = this._operation;
     data['amount'] = this._amount;
     data['operationValue'] = this._operationValue;

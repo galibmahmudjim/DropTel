@@ -1,5 +1,6 @@
-import 'Activity.dart';
-import 'Statement.dart';
+import 'package:droptel/Obj/Activity.dart';
+import 'package:droptel/Obj/ActivityList.dart';
+import 'package:droptel/Obj/Statement.dart';
 
 class Wallet {
   String? _sId;
@@ -8,18 +9,17 @@ class Wallet {
   String? _dateTime;
   String? _title;
   String? _type;
-  List<Statement>? _statements;
-  List<Activity>? _activities;
+  List<ActivityList>? _activityList;
 
-  Wallet(
-      {String? sId,
-      String? eventID,
-      String? eventName,
-      String? dateTime,
-      String? title,
-      String? type,
-      List<Statement>? statements,
-      List<Activity>? activities}) {
+  Wallet({
+    String? sId,
+    String? eventID,
+    String? eventName,
+    String? dateTime,
+    String? title,
+    String? type,
+    List<ActivityList>? activityList,
+  }) {
     if (sId != null) {
       this._sId = sId;
     }
@@ -38,11 +38,8 @@ class Wallet {
     if (type != null) {
       this._type = type;
     }
-    if (statements != null) {
-      this._statements = statements;
-    }
-    if (activities != null) {
-      this._activities = activities;
+    if (activityList != null) {
+      this._activityList = activityList;
     }
   }
 
@@ -58,10 +55,9 @@ class Wallet {
   set title(String? title) => _title = title;
   String? get type => _type;
   set type(String? type) => _type = type;
-  List<Statement>? get statements => _statements;
-  set statements(List<Statement>? statements) => _statements = statements;
-  List<Activity>? get activities => _activities;
-  set activities(List<Activity>? activities) => _activities = activities;
+  List<ActivityList>? get activityList => _activityList;
+  set activityList(List<ActivityList>? activityList) =>
+      _activityList = activityList;
 
   Wallet.fromJson(Map<String, dynamic> json) {
     _sId = json['_id'];
@@ -70,16 +66,14 @@ class Wallet {
     _dateTime = json['DateTime'];
     _title = json['Title'];
     _type = json['type'];
-    if (json['statements'] != null) {
-      _statements = <Statement>[];
-      json['statements'].forEach((v) {
-        _statements!.add(new Statement.fromJson(v));
-      });
-    }
-    if (json['Activities'] != null) {
-      _activities = <Activity>[];
-      json['Activities'].forEach((v) {
-        _activities!.add(new Activity.fromJson(v));
+    if (json['ActivityList'] != null) {
+      _activityList = <ActivityList>[];
+      json['ActivityList'].forEach((v) {
+        if (v['Type'] == "Statement") {
+          _activityList!.add(Statement.fromJson(v));
+        } else if (v['Type'] == "Activity") {
+          _activityList!.add(new Activity.fromJson(v));
+        }
       });
     }
   }
@@ -92,12 +86,17 @@ class Wallet {
     data['DateTime'] = this._dateTime;
     data['Title'] = this._title;
     data['type'] = this._type;
-    if (this._statements != null) {
-      data['statements'] = this._statements!.map((v) => v.toJson()).toList();
+
+    if (this._activityList != null) {
+      data['ActivityList'] = this._activityList!.map((v) {
+        if (v.type == "Statement") {
+          return (v as Statement).toJson();
+        } else if (v.type == "Activity") {
+          return (v as Activity).toJson();
+        }
+      }).toList();
     }
-    if (this._activities != null) {
-      data['Activities'] = this._activities!.map((v) => v.toJson()).toList();
-    }
+
     return data;
   }
 }

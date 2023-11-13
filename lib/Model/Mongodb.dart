@@ -1,3 +1,4 @@
+import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -125,10 +126,11 @@ class Mongodb {
   }
 
   static Future<dynamic>? FindEventDetails(String eventID) async {
-    if (db.isConnected == false) {
+    if (db.isConnected == false || !db.masterConnection.connected) {
       connect();
     }
-    var result = await Event_Wallet_collection.findOne({"EventID": eventID});
-    return result;
+    logger.d(db.masterConnection.connected);
+    final result = await Event_Wallet_collection.findOne({"EventID": eventID});
+    return await result;
   }
 }

@@ -2,6 +2,8 @@ import 'dart:core';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:droptel/Model/Mongodb.dart';
+import 'package:droptel/Obj/Activity.dart';
+import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/EventGuest.dart';
 import 'package:droptel/Obj/PersonalTransition.dart';
 import 'package:droptel/Obj/Statement.dart';
@@ -15,7 +17,6 @@ import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:objectid/objectid.dart';
 
-import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 import '../../Widget/snackbar.dart';
 
@@ -43,10 +44,12 @@ class _expensesState extends State<expenses> {
   List<MultiSelectItem<EventGuest>> selectGuests = [];
   EventGuest allGuest = EventGuest(name: "All", email: "");
   bool flagall = false;
+
   //multiset guest end
 
   //statement or activity
   int buttonSeleted = 1;
+
   //statement or activity end
 
   // new statement
@@ -54,7 +57,13 @@ class _expensesState extends State<expenses> {
   var guestListSelected = [];
   String? dropdownValue;
   int actionSelected = 1;
+
   // new state end
+
+  //new activity start
+  TextEditingController activityNameController = TextEditingController();
+  TextEditingController activityDescriptionController = TextEditingController();
+  //new activity end
 
   TextEditingController statementNameController = TextEditingController();
   TextEditingController amountTextController = TextEditingController();
@@ -70,6 +79,7 @@ class _expensesState extends State<expenses> {
   double valueofOperation = 0;
   double amount = 0;
   bool isReview = false;
+  bool isReviewPayment = false;
   bool interlock = false;
 
   @override
@@ -85,8 +95,31 @@ class _expensesState extends State<expenses> {
     }
     return Scaffold(
       appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.black),
-          backgroundColor: Colors.white,
+          iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
+          backgroundColor: Colors.white.withOpacity(0.4),
+          actions: [
+            IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.summarize,
+                  color: Colors.black.withOpacity(0.7),
+                )),
+            IconButton(
+                onPressed: () {
+                  setState(() {});
+                },
+                icon: Icon(
+                  Icons.edit,
+                  color: Colors.black.withOpacity(0.7),
+                ))
+          ],
+          title: Text(
+            "Event Wallet",
+            style: GoogleFonts.lato(
+                color: Colors.green.withOpacity(0.8),
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
+          ),
           shadowColor: Colors.transparent,
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(0),
@@ -372,6 +405,7 @@ class _expensesState extends State<expenses> {
   }
 
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   Widget newStatement() {
     return Form(
       key: _formKey,
@@ -541,8 +575,21 @@ class _expensesState extends State<expenses> {
   }
 
   Widget newActivity() {
-    return Container(
-      child: Text("Activity"),
+    return Column(
+      children: [
+        SizedBox(
+          height: height * 0.03,
+        ),
+        AddTitleActivity(),
+        SizedBox(
+          height: 20,
+        ),
+        AddDesriptionActivity(),
+        SizedBox(
+          height: 10,
+        ),
+        AddActivityButtonStatement(),
+      ],
     );
   }
 
@@ -643,7 +690,7 @@ class _expensesState extends State<expenses> {
             fontFamily: GoogleFonts.prompt().fontFamily,
             fontSize: 15,
             fontWeight: FontWeight.w900,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withOpacity(0.5),
           ),
         ),
       ),
@@ -651,7 +698,11 @@ class _expensesState extends State<expenses> {
   }
 
   PaymentAction() {
-    return Container();
+    return Column(
+      children: [
+        if (isReviewPayment) reviewPaymentStatement(),
+      ],
+    );
   }
 
   ExpenditureAction() {
@@ -782,6 +833,161 @@ class _expensesState extends State<expenses> {
         ),
       ),
     );
+  }
+
+  reviewPaymentStatement() {
+    return Card(
+        elevation: 1,
+        color: Colors.indigo[500]?.withOpacity(0.7),
+        child: Container(
+            decoration: BoxDecoration(color: Colors.transparent),
+            padding: EdgeInsets.only(left: 10, right: 10),
+            margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+            width: width,
+            child: Container(
+              padding:
+                  EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white,
+                  width: 1,
+                ),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  children: [
+                    Container(
+                      width: width * 0.25,
+                      child: Text(statementNameController.text.toString(),
+                          style: GoogleFonts.robotoMono(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                        child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Amount",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                amount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalAmount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total Members",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                memberCount.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total Per Person",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalAmountPerPerson.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Container(
+                              child: Text(
+                                "Total with members",
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            )),
+                            Container(
+                              child: Text(
+                                totalWithPerson.toString(),
+                                style: GoogleFonts.robotoMono(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ))
+                  ],
+                ),
+              ),
+            )));
   }
 
   reviewStatement() {
@@ -1036,6 +1242,7 @@ class _expensesState extends State<expenses> {
     'Multiplication (x)',
     'Division (/)',
   ];
+
   dropDownMenuCalculation() {
     return Container(
       padding: EdgeInsets.only(
@@ -1112,6 +1319,7 @@ class _expensesState extends State<expenses> {
   }
 
   bool dividedMembers = false;
+
   dividedMemberCheckbox() {
     return Expanded(
       child: Row(
@@ -1161,6 +1369,7 @@ class _expensesState extends State<expenses> {
   }
 
   bool checkboxValue = false;
+
   CustomCalculateButton() {
     return Expanded(
       child: Row(
@@ -1210,6 +1419,7 @@ class _expensesState extends State<expenses> {
   }
 
   bool ammountFlag = true;
+
   Amount() {
     return Expanded(
       child: Container(
@@ -1410,10 +1620,11 @@ class _expensesState extends State<expenses> {
       );
     }).toList();
     DateTime now = DateTime.now();
-    Statement statement = Statement(
+    ActivityList statement = Statement(
       sId: ObjectId().toString(),
       title: string,
-      type: actionSelected == 1 ? "Payment" : "Expenditure",
+      type: "Statement",
+      statementType: actionSelected == 1 ? "Payment" : "Expenditure",
       isCustomOperation: checkboxValue,
       dateTime: now.toString(),
       operation: selectedValueOperationString,
@@ -1427,22 +1638,87 @@ class _expensesState extends State<expenses> {
     );
 
     isLoading = true;
-    Future<dynamic>? resultWallet =
-        Mongodb.FindEventDetails(widget.eventwallet.sId!);
-    bool walletflag = false;
+    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
+
     Wallet wallet = Wallet();
+    String id;
+    List<ActivityList> stList;
     resultWallet
         ?.then((value) => {
               if (value != null)
                 {
                   wallet = Wallet.fromJson(value),
-                  wallet.statements!.add(statement),
-                  logger.i(wallet.toJson()),
-                  walletflag = true,
+                  stList = wallet.activityList!.map((e) => e).toList(),
+                  stList.add(statement),
+                  wallet.activityList = stList,
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(
+                                builder: (context) {
+                                  return expenses(
+                                    eventwallet: widget.eventwallet,
+                                    user: widget.user,
+                                  );
+                                },
+                              ));
+                              isLoading = false;
+                              snackBar(context, "Statement Added",
+                                  Colors.greenAccent);
+                            }),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                  setState(() {
+                    isLoading = false;
+                  }),
                 }
               else
                 {
-                  walletflag = false,
+                  id = ObjectId().toString(),
+                  wallet = Wallet(
+                    sId: id,
+                    eventID: widget.eventwallet.sId,
+                    eventName: widget.eventwallet.title,
+                    dateTime: now.toString(),
+                    title: string,
+                    type: selectedGuests.length == 1 ? "Single" : "Group",
+                    activityList: [statement],
+                  ),
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(
+                              builder: (context) {
+                                return expenses(
+                                  eventwallet: widget.eventwallet,
+                                  user: widget.user,
+                                );
+                              },
+                            )),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
                 }
             })
         .timeout(Duration(seconds: 10), onTimeout: () {
@@ -1451,20 +1727,230 @@ class _expensesState extends State<expenses> {
       });
       return snackBar(context, "Something went wrong", Colors.redAccent);
     });
+  }
 
-    if (!walletflag) {
-      String id = ObjectId().toString();
-      wallet = Wallet(
-        sId: id,
-        eventID: widget.eventwallet.sId,
-        eventName: widget.eventwallet.title,
-        dateTime: now.toString(),
-        title: widget.eventwallet.title,
-        type: selectedGuests.length == 1 ? "Single" : "Group",
-        statements: [statement],
-        activities: null,
-      );
+  AddTitleActivity() {
+    return Container(
+      margin: EdgeInsets.only(left: 20, right: 20),
+      padding: EdgeInsets.only(left: 10, right: 10),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1,
+        ),
+      ),
+      child: TextFormField(
+        controller: activityNameController,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter Name';
+          }
+          return null;
+        },
+        cursorColor: Colors.white,
+        style: TextStyle(
+          fontSize: 17,
+          fontFamily: GoogleFonts.prompt(
+            color: Color(0xFF464647),
+          ).fontFamily,
+          fontStyle: FontStyle.normal,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+        textAlignVertical: TextAlignVertical.bottom,
+        textAlign: TextAlign.left,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          errorStyle: TextStyle(height: 0, fontSize: 0),
+          hintText: 'Add Title',
+          hintStyle: TextStyle(
+            fontFamily: GoogleFonts.prompt().fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: Colors.white.withOpacity(0.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  AddDesriptionActivity() {
+    return Container(
+      margin: EdgeInsets.only(left: 20, right: 20),
+      padding: EdgeInsets.only(left: 10, right: 10),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1,
+        ),
+      ),
+      child: TextFormField(
+        keyboardType: TextInputType.multiline,
+        maxLines: null,
+        controller: activityDescriptionController,
+        cursorColor: Colors.white,
+        style: TextStyle(
+          fontSize: 17,
+          fontFamily: GoogleFonts.prompt(
+            color: Color(0xFF464647),
+          ).fontFamily,
+          fontStyle: FontStyle.normal,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+        textAlignVertical: TextAlignVertical.bottom,
+        textAlign: TextAlign.left,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          errorStyle: TextStyle(height: 0, fontSize: 0),
+          hintText: 'Add Description',
+          hintStyle: TextStyle(
+            fontFamily: GoogleFonts.prompt().fontFamily,
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: Colors.white.withOpacity(0.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  AddActivityButtonStatement() {
+    return Container(
+      margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
+      child: ElevatedButton(
+        onPressed: () {
+          onAddActivityProcess();
+        },
+        child: Text(
+          "Add Activity",
+          style: GoogleFonts.notoSans(
+              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.redAccent,
+          padding: EdgeInsets.only(
+            top: 15,
+            bottom: 15,
+            left: 20,
+            right: 20,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onAddActivityProcess() {
+    if (activityNameController.text.isEmpty) {
+      snackBar(context, "Please enter Title", Colors.redAccent);
+      return;
     }
-    isLoading = false;
+    DateTime now = DateTime.now();
+    ActivityList activity = Activity(
+      sId: ObjectId().toString(),
+      title: activityNameController.text.toString(),
+      type: "Activity",
+      dateTime: now.toString(),
+    );
+
+    isLoading = true;
+    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
+    bool walletflag = false;
+    Wallet wallet = Wallet();
+    String id;
+    List<ActivityList> stList;
+    resultWallet
+        ?.then((value) => {
+              if (value != null)
+                {
+                  wallet = Wallet.fromJson(value),
+                  stList = wallet.activityList!.map((e) => e).toList(),
+                  stList.add(activity),
+                  wallet.activityList = stList,
+                  walletflag = true,
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(
+                                builder: (context) {
+                                  return expenses(
+                                    eventwallet: widget.eventwallet,
+                                    user: widget.user,
+                                  );
+                                },
+                              ));
+                              isLoading = false;
+                              snackBar(context, "Activity Added",
+                                  Colors.greenAccent);
+                            }),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                  setState(() {
+                    isLoading = false;
+                  }),
+                }
+              else
+                {
+                  walletflag = false,
+                  id = ObjectId().toString(),
+                  wallet = Wallet(
+                    sId: id,
+                    eventID: widget.eventwallet.sId,
+                    eventName: widget.eventwallet.title,
+                    dateTime: now.toString(),
+                    title: activityNameController.text.toString(),
+                    type: selectedGuests.length == 1 ? "Single" : "Group",
+                    activityList: [activity],
+                  ),
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(
+                              builder: (context) {
+                                return expenses(
+                                  eventwallet: widget.eventwallet,
+                                  user: widget.user,
+                                );
+                              },
+                            )),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                }
+            })
+        .timeout(Duration(seconds: 10), onTimeout: () {
+      setState(() {
+        isLoading = false;
+      });
+      return snackBar(context, "Something went wrong", Colors.redAccent);
+    });
   }
 }

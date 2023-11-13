@@ -2,9 +2,11 @@ import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
+import 'package:droptel/Pages/Expenses/expenses.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../Obj/User.dart';
 import '../Widget/snackbar.dart';
@@ -22,15 +24,16 @@ class EventHomePage extends StatefulWidget {
 }
 
 class _EventHomePageState extends State<EventHomePage> {
-  eventWallet? eventwallet;
+  eventWallet? Eventwallet;
   User? user;
   Wallet? wallet;
 
   bool isLoading = false;
+  final PanelController _panelController = PanelController();
 
   getWalletDetails() async {
     isLoading = true;
-    Future<dynamic>? result = Mongodb.FindEventDetails(eventwallet!.sId!);
+    Future<dynamic>? result = Mongodb.FindEventDetails(Eventwallet!.sId!);
     result
         ?.then((value) => {
               if (value != null)
@@ -64,7 +67,7 @@ class _EventHomePageState extends State<EventHomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    eventwallet = widget.eventwallet;
+    Eventwallet = widget.eventwallet;
     user = widget.user;
     getWalletDetails();
   }
@@ -76,44 +79,116 @@ class _EventHomePageState extends State<EventHomePage> {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
-          backgroundColor: Colors.white.withOpacity(0.4),
-          actions: [
-            IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.summarize,
-                  color: Colors.black.withOpacity(0.7),
-                )),
-            IconButton(
-                onPressed: () {
-                  setState(() {});
-                },
-                icon: Icon(
-                  Icons.edit,
-                  color: Colors.black.withOpacity(0.7),
-                ))
-          ],
-          title: Text(
-            eventwallet!.title ?? "Event",
-            style: GoogleFonts.lato(
-                color: Colors.green.withOpacity(0.8),
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
-          ),
-          shadowColor: Colors.transparent,
-          bottom: PreferredSize(
-            preferredSize: Size.fromHeight(0),
-            child: Opacity(
-              opacity: 0.1,
-              child: Container(
-                height: 0.5,
-              ),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+            iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
+            backgroundColor: Colors.white.withOpacity(0.4),
+            actions: [
+              IconButton(
+                  onPressed: () {},
+                  icon: Icon(
+                    Icons.summarize,
+                    color: Colors.black.withOpacity(0.7),
+                  )),
+              IconButton(
+                  onPressed: () {
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    Icons.edit,
+                    color: Colors.black.withOpacity(0.7),
+                  ))
+            ],
+            title: Text(
+              Eventwallet?.title ?? "Event",
+              style: GoogleFonts.lato(
+                  color: Colors.green.withOpacity(0.8),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
             ),
-          )),
-      body: MainBody(),
+            shadowColor: Colors.transparent,
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(0),
+              child: Opacity(
+                opacity: 0.1,
+                child: Container(
+                  height: 0.5,
+                ),
+              ),
+            )),
+        body: SlidingUpPanel(
+          body: MainBody(),
+          controller: _panelController,
+          panelBuilder: (ScrollController sc) => Panel(sc),
+        ),
+      ),
+    );
+  }
+
+  bool flag = false;
+  Map<int, Widget> items = {};
+  Widget Panel(ScrollController scrollController) {
+    if (!flag) {
+      items[0] = expenses(eventwallet: Eventwallet!, user: user!);
+      // items.add(part1());
+      // items.add(part2());
+
+      flag = true;
+    }
+    return Container(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: 1,
+                    itemBuilder: (context, index) {
+                      return Builder(
+                        builder: (context) {
+                          return Focus(
+                            onFocusChange: (value) {
+                              if (value) {
+                                if (!_panelController.isPanelOpen) {
+                                  _panelController.open();
+                                }
+                              }
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                                  left: 10, right: 10, bottom: 10),
+                              child: Builder(
+                                builder: (context) {
+                                  return index == items.length
+                                      ? Container(
+                                          height: 20,
+                                        )
+                                      : items.values.elementAt(index);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            isLoading
+                ? Opacity(
+                    opacity: 0.5,
+                    child: loading(
+                        heightBox: MediaQuery.of(context).size.height,
+                        widthBox: MediaQuery.of(context).size.width))
+                : Container(),
+          ],
+        ),
+      ),
     );
   }
 

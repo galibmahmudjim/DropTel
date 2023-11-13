@@ -126,7 +126,9 @@ class Mongodb {
   }
 
   static Future<dynamic>? FindEventDetails(String eventID) async {
-    if (db.isConnected == false || !db.masterConnection.connected) {
+    if (db.isConnected == false ||
+        !db.masterConnection.connected ||
+        db.masterConnection == null) {
       connect();
     }
     logger.d(db.masterConnection.connected);

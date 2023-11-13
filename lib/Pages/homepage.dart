@@ -1,4 +1,5 @@
 import 'package:animations/animations.dart';
+import 'package:droptel/Pages/EventHomePage.dart';
 import 'package:droptel/Pages/NewEvent.dart';
 import 'package:droptel/Widget/SearchWidget.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import '../Widget/SearchBarWidget.dart';
 import '../Widget/bottomAppBar.dart';
 import '../Widget/loading.dart';
 import '../homeLogin.dart';
-import 'Expenses/expenses.dart';
 
 class HomePage extends StatefulWidget {
   final User? user;
@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => expenses(
+                      builder: (context) => EventHomePage(
                             eventwallet: event,
                             user: user,
                           )));

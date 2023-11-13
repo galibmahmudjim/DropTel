@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:objectid/objectid.dart';
 
+import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 import '../../Widget/snackbar.dart';
 
@@ -82,16 +83,29 @@ class _expensesState extends State<expenses> {
   bool isReviewPayment = false;
   bool interlock = false;
 
+  //payment
+  double amountPayment = 0;
+  double totalAmountPayment = 0;
+  int memberCountPayment = 0;
+  double totalPerPersonPayment = 0;
+  double totalWithPersonPayment = 0;
+
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
 
-    if (interlock) {
+    if (interlock && actionSelected == 2) {
       isReview = true;
+      isReviewPayment = false;
+      interlock = false;
+    } else if (interlock && actionSelected == 1) {
+      isReview = false;
+      isReviewPayment = true;
       interlock = false;
     } else {
       isReview = false;
+      isReviewPayment = false;
     }
     return Scaffold(
       appBar: AppBar(
@@ -700,7 +714,28 @@ class _expensesState extends State<expenses> {
   PaymentAction() {
     return Column(
       children: [
-        if (isReviewPayment) reviewPaymentStatement(),
+        SizedBox(
+          height: 10,
+        ),
+        Container(
+          decoration: BoxDecoration(
+              border: Border(
+            top: BorderSide(width: 1, color: Color(0x74F1EBEB)),
+          )),
+          margin: EdgeInsets.only(left: 10, right: 10),
+          width: width,
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                dividedMemberCheckbox(),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        if (isReviewPayment && actionSelected == 1) reviewPaymentStatement(),
       ],
     );
   }
@@ -745,7 +780,7 @@ class _expensesState extends State<expenses> {
           ),
         ),
         if (checkboxValue) CustomCalculationProperty(),
-        if (isReview) reviewStatement(),
+        if (isReview && actionSelected == 2) reviewStatement(),
       ],
     );
   }
@@ -836,6 +871,21 @@ class _expensesState extends State<expenses> {
   }
 
   reviewPaymentStatement() {
+    logger.d("reviewPaymentStatement");
+    amountPayment = double.parse(amountTextController.text.toString());
+    amountPayment = double.parse(amountPayment.toStringAsFixed(2));
+    totalAmountPayment = amountPayment;
+    memberCountPayment = selectedGuests.length;
+    totalPerPersonPayment;
+    if (dividedMembers)
+      totalPerPersonPayment = amountPayment / memberCountPayment;
+    else
+      totalPerPersonPayment = amountPayment;
+    totalPerPersonPayment =
+        double.parse(totalPerPersonPayment.toStringAsFixed(2));
+    totalWithPersonPayment = totalPerPersonPayment * memberCountPayment;
+    totalWithPersonPayment =
+        double.parse(totalWithPersonPayment.toStringAsFixed(2));
     return Card(
         elevation: 1,
         color: Colors.indigo[500]?.withOpacity(0.7),
@@ -881,7 +931,7 @@ class _expensesState extends State<expenses> {
                             )),
                             Container(
                               child: Text(
-                                amount.toString(),
+                                amountPayment.toString(),
                                 style: GoogleFonts.robotoMono(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -904,7 +954,7 @@ class _expensesState extends State<expenses> {
                             )),
                             Container(
                               child: Text(
-                                totalAmount.toString(),
+                                totalAmountPayment.toString(),
                                 style: GoogleFonts.robotoMono(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -927,7 +977,7 @@ class _expensesState extends State<expenses> {
                             )),
                             Container(
                               child: Text(
-                                memberCount.toString(),
+                                memberCountPayment.toString(),
                                 style: GoogleFonts.robotoMono(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -950,7 +1000,7 @@ class _expensesState extends State<expenses> {
                             )),
                             Container(
                               child: Text(
-                                totalAmountPerPerson.toString(),
+                                totalPerPersonPayment.toString(),
                                 style: GoogleFonts.robotoMono(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -973,7 +1023,7 @@ class _expensesState extends State<expenses> {
                             )),
                             Container(
                               child: Text(
-                                totalWithPerson.toString(),
+                                totalWithPersonPayment.toString(),
                                 style: GoogleFonts.robotoMono(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -991,6 +1041,7 @@ class _expensesState extends State<expenses> {
   }
 
   reviewStatement() {
+    logger.d("reviewStatement");
     return Card(
         elevation: 1,
         color: Colors.indigo[500]?.withOpacity(0.7),
@@ -1523,7 +1574,7 @@ class _expensesState extends State<expenses> {
           }
 
           amount = double.parse(amountTextController.text);
-          if (checkboxValue) {
+          if (checkboxValue && actionSelected == 2) {
             if (customCalculationTitleController.text.isEmpty) {
               snackBar(context, "Please enter Custom Calculation Title",
                   Colors.redAccent);
@@ -1565,7 +1616,7 @@ class _expensesState extends State<expenses> {
               double.parse(totalAmountPerPerson.toStringAsFixed(2));
           totalWithPerson = totalAmountPerPerson * memberCount;
           totalWithPerson = double.parse(totalWithPerson.toStringAsFixed(2));
-          if (isReview) {
+          if (isReview && actionSelected == 2) {
             processStatement(
                 statementNameController.text.toString(),
                 customCalculationTitleController.text.toString(),
@@ -1574,6 +1625,15 @@ class _expensesState extends State<expenses> {
                 totalAmount,
                 totalAmountPerPerson,
                 memberCount);
+          } else if (isReviewPayment && actionSelected == 1) {
+            ProcessPayment(
+              statementNameController.text.toString(),
+              amountPayment,
+              totalAmountPayment,
+              memberCountPayment,
+              totalPerPersonPayment,
+              totalWithPersonPayment,
+            );
           }
 
           setState(() {
@@ -1599,134 +1659,6 @@ class _expensesState extends State<expenses> {
         ),
       ),
     );
-  }
-
-  Future<void> processStatement(
-      String string,
-      String string2,
-      double amount,
-      double valueofOperation,
-      double totalAmount,
-      double totalAmountPerPerson,
-      int memberCount) async {
-    double totalWithMembers = totalAmountPerPerson * memberCount;
-    totalWithMembers = double.parse(totalWithMembers.toStringAsFixed(2));
-    List<PersonalTransition> personalTransition = selectedGuests.map((e) {
-      return PersonalTransition(
-        sId: ObjectId().toString(),
-        type: actionSelected == 1 ? "Payment" : "Expenditure",
-        member: e,
-        amount: totalAmountPerPerson,
-      );
-    }).toList();
-    DateTime now = DateTime.now();
-    ActivityList statement = Statement(
-      sId: ObjectId().toString(),
-      title: string,
-      type: "Statement",
-      statementType: actionSelected == 1 ? "Payment" : "Expenditure",
-      isCustomOperation: checkboxValue,
-      dateTime: now.toString(),
-      operation: selectedValueOperationString,
-      amount: amount,
-      operationValue: valueofOperation,
-      total: totalAmount,
-      countMembers: memberCount,
-      totalPerPerson: totalAmountPerPerson,
-      totalWithMembers: totalWithMembers,
-      member: personalTransition,
-    );
-
-    isLoading = true;
-    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
-
-    Wallet wallet = Wallet();
-    String id;
-    List<ActivityList> stList;
-    resultWallet
-        ?.then((value) => {
-              if (value != null)
-                {
-                  wallet = Wallet.fromJson(value),
-                  stList = wallet.activityList!.map((e) => e).toList(),
-                  stList.add(statement),
-                  wallet.activityList = stList,
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              Navigator.pushReplacement(context,
-                                  MaterialPageRoute(
-                                builder: (context) {
-                                  return expenses(
-                                    eventwallet: widget.eventwallet,
-                                    user: widget.user,
-                                  );
-                                },
-                              ));
-                              isLoading = false;
-                              snackBar(context, "Statement Added",
-                                  Colors.greenAccent);
-                            }),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
-                  setState(() {
-                    isLoading = false;
-                  }),
-                }
-              else
-                {
-                  id = ObjectId().toString(),
-                  wallet = Wallet(
-                    sId: id,
-                    eventID: widget.eventwallet.sId,
-                    eventName: widget.eventwallet.title,
-                    dateTime: now.toString(),
-                    title: string,
-                    type: selectedGuests.length == 1 ? "Single" : "Group",
-                    activityList: [statement],
-                  ),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(
-                              builder: (context) {
-                                return expenses(
-                                  eventwallet: widget.eventwallet,
-                                  user: widget.user,
-                                );
-                              },
-                            )),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
-                }
-            })
-        .timeout(Duration(seconds: 10), onTimeout: () {
-      setState(() {
-        isLoading = false;
-      });
-      return snackBar(context, "Something went wrong", Colors.redAccent);
-    });
   }
 
   AddTitleActivity() {
@@ -1918,6 +1850,259 @@ class _expensesState extends State<expenses> {
                     title: activityNameController.text.toString(),
                     type: selectedGuests.length == 1 ? "Single" : "Group",
                     activityList: [activity],
+                  ),
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(
+                              builder: (context) {
+                                return expenses(
+                                  eventwallet: widget.eventwallet,
+                                  user: widget.user,
+                                );
+                              },
+                            )),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                }
+            })
+        .timeout(Duration(seconds: 10), onTimeout: () {
+      setState(() {
+        isLoading = false;
+      });
+      return snackBar(context, "Something went wrong", Colors.redAccent);
+    });
+  }
+
+  void ProcessPayment(
+      String string,
+      double amountPayment,
+      double totalAmountPayment,
+      int memberCountPayment,
+      double totalPerPersonPayment,
+      double totalWithPersonPayment) async {
+    List<PersonalTransition> personalTransition = selectedGuests.map((e) {
+      return PersonalTransition(
+        sId: ObjectId().toString(),
+        type: actionSelected == 1 ? "Payment" : "Expenditure",
+        member: e,
+        amount: totalPerPersonPayment,
+      );
+    }).toList();
+    DateTime now = DateTime.now();
+    ActivityList statement = Statement(
+      sId: ObjectId().toString(),
+      title: string,
+      type: "Statement",
+      statementType: actionSelected == 1 ? "Payment" : "Expenditure",
+      isCustomOperation: false,
+      dateTime: now.toString(),
+      operation: null,
+      amount: amountPayment,
+      operationValue: null,
+      total: totalAmountPayment,
+      countMembers: memberCountPayment,
+      totalPerPerson: totalPerPersonPayment,
+      totalWithMembers: totalWithPersonPayment,
+      member: personalTransition,
+    );
+
+    isLoading = true;
+    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
+
+    Wallet wallet = Wallet();
+    String id;
+    List<ActivityList> stList;
+    resultWallet
+        ?.then((value) => {
+              if (value != null)
+                {
+                  wallet = Wallet.fromJson(value),
+                  stList = wallet.activityList!.map((e) => e).toList(),
+                  stList.add(statement),
+                  wallet.activityList = stList,
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(
+                                builder: (context) {
+                                  return expenses(
+                                    eventwallet: widget.eventwallet,
+                                    user: widget.user,
+                                  );
+                                },
+                              ));
+                              isLoading = false;
+                              snackBar(context, "Statement Added",
+                                  Colors.greenAccent);
+                            }),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                  setState(() {
+                    isLoading = false;
+                  }),
+                }
+              else
+                {
+                  id = ObjectId().toString(),
+                  wallet = Wallet(
+                    sId: id,
+                    eventID: widget.eventwallet.sId,
+                    eventName: widget.eventwallet.title,
+                    dateTime: now.toString(),
+                    title: string,
+                    type: selectedGuests.length == 1 ? "Single" : "Group",
+                    activityList: [statement],
+                  ),
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            Navigator.pushReplacement(context,
+                                MaterialPageRoute(
+                              builder: (context) {
+                                return expenses(
+                                  eventwallet: widget.eventwallet,
+                                  user: widget.user,
+                                );
+                              },
+                            )),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                }
+            })
+        .timeout(Duration(seconds: 10), onTimeout: () {
+      setState(() {
+        isLoading = false;
+      });
+      return snackBar(context, "Something went wrong", Colors.redAccent);
+    });
+  }
+
+  Future<void> processStatement(
+      String string,
+      String string2,
+      double amount,
+      double valueofOperation,
+      double totalAmount,
+      double totalAmountPerPerson,
+      int memberCount) async {
+    double totalWithMembers = totalAmountPerPerson * memberCount;
+    totalWithMembers = double.parse(totalWithMembers.toStringAsFixed(2));
+    List<PersonalTransition> personalTransition = selectedGuests.map((e) {
+      return PersonalTransition(
+        sId: ObjectId().toString(),
+        type: actionSelected == 1 ? "Payment" : "Expenditure",
+        member: e,
+        amount: totalAmountPerPerson,
+      );
+    }).toList();
+    DateTime now = DateTime.now();
+    ActivityList statement = Statement(
+      sId: ObjectId().toString(),
+      title: string,
+      type: "Statement",
+      statementType: actionSelected == 1 ? "Payment" : "Expenditure",
+      isCustomOperation: checkboxValue,
+      dateTime: now.toString(),
+      operation: selectedValueOperationString,
+      amount: amount,
+      operationValue: valueofOperation,
+      total: totalAmount,
+      countMembers: memberCount,
+      totalPerPerson: totalAmountPerPerson,
+      totalWithMembers: totalWithMembers,
+      member: personalTransition,
+    );
+
+    isLoading = true;
+    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
+
+    Wallet wallet = Wallet();
+    String id;
+    List<ActivityList> stList;
+    resultWallet
+        ?.then((value) => {
+              if (value != null)
+                {
+                  wallet = Wallet.fromJson(value),
+                  stList = wallet.activityList!.map((e) => e).toList(),
+                  stList.add(statement),
+                  wallet.activityList = stList,
+                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
+                        if (value != null)
+                          {
+                            setState(() {
+                              Navigator.pushReplacement(context,
+                                  MaterialPageRoute(
+                                builder: (context) {
+                                  return expenses(
+                                    eventwallet: widget.eventwallet,
+                                    user: widget.user,
+                                  );
+                                },
+                              ));
+                              isLoading = false;
+                              snackBar(context, "Statement Added",
+                                  Colors.greenAccent);
+                            }),
+                          }
+                        else
+                          {
+                            setState(() {
+                              isLoading = false;
+                            }),
+                            snackBar(context, "Something went wrong",
+                                Colors.redAccent),
+                          }
+                      }),
+                  setState(() {
+                    isLoading = false;
+                  }),
+                }
+              else
+                {
+                  id = ObjectId().toString(),
+                  wallet = Wallet(
+                    sId: id,
+                    eventID: widget.eventwallet.sId,
+                    eventName: widget.eventwallet.title,
+                    dateTime: now.toString(),
+                    title: string,
+                    type: selectedGuests.length == 1 ? "Single" : "Group",
+                    activityList: [statement],
                   ),
                   Mongodb.EventWalletDetails(wallet)?.then((value) => {
                         if (value != null)

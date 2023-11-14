@@ -89,7 +89,7 @@ class _LoginWidgetState extends State<LoginWidget> {
             validator: (value) {
               if (value == null) {
                 return "Enter valid email";
-              } else if (value!.isEmpty) {
+              } else if (value.isEmpty) {
                 setState(() {
                   emailError = "Email is required";
                 });
@@ -166,7 +166,7 @@ class _LoginWidgetState extends State<LoginWidget> {
               validator: (value) {
                 if (value == null) {
                   return "Enter valid password";
-                } else if (value!.isEmpty) {
+                } else if (value.isEmpty) {
                   setState(() {
                     passwordError = "Password is required";
                   });

@@ -9,7 +9,6 @@ import 'package:droptel/Obj/PersonalTransition.dart';
 import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
-import 'package:droptel/Pages/EventHomePage.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,21 +17,23 @@ import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:objectid/objectid.dart';
 
+import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 import '../../Widget/snackbar.dart';
 
-class expenses extends StatefulWidget {
+class expensesBottomSheet extends StatefulWidget {
   final eventWallet eventwallet;
   final User user;
 
-  const expenses({Key? key, required this.eventwallet, required this.user})
+  const expensesBottomSheet(
+      {Key? key, required this.eventwallet, required this.user})
       : super(key: key);
 
   @override
-  State<expenses> createState() => _expensesState();
+  State<expensesBottomSheet> createState() => _expensesBottomSheetState();
 }
 
-class _expensesState extends State<expenses> {
+class _expensesBottomSheetState extends State<expensesBottomSheet> {
   bool isLoading = false;
   bool isNewActivityCreated = false;
   double height = 0;
@@ -447,7 +448,7 @@ class _expensesState extends State<expenses> {
           SizedBox(
             height: 10,
           ),
-          AddExpensesButtonStatement(),
+          AddexpensesBottomSheetButtonStatement(),
         ],
       ),
     );
@@ -871,8 +872,9 @@ class _expensesState extends State<expenses> {
   }
 
   reviewPaymentStatement() {
+    logger.d("reviewPaymentStatement");
     amountPayment = double.parse(amountTextController.text.toString());
-    amountPayment = double.parse(amountPayment.toStringAsFixed(2)) * -1;
+    amountPayment = double.parse(amountPayment.toStringAsFixed(2));
     totalAmountPayment = amountPayment;
     memberCountPayment = selectedGuests.length;
     totalPerPersonPayment;
@@ -1040,6 +1042,7 @@ class _expensesState extends State<expenses> {
   }
 
   reviewStatement() {
+    logger.d("reviewStatement");
     return Card(
         elevation: 1,
         color: Colors.indigo[500]?.withOpacity(0.7),
@@ -1552,7 +1555,7 @@ class _expensesState extends State<expenses> {
     );
   }
 
-  AddExpensesButtonStatement() {
+  AddexpensesBottomSheetButtonStatement() {
     return Container(
       margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
       child: ElevatedButton(
@@ -1639,7 +1642,7 @@ class _expensesState extends State<expenses> {
           });
         },
         child: Text(
-          "${(isReview && actionSelected == 2) || (isReviewPayment && actionSelected == 1) ? "Add Statement" : "Review"}",
+          "${isReview ? "Add Statement" : "Review"}",
           style: GoogleFonts.notoSans(
               color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
         ),
@@ -1787,7 +1790,6 @@ class _expensesState extends State<expenses> {
       sId: ObjectId().toString(),
       title: activityNameController.text.toString(),
       type: "Activity",
-      description: activityDescriptionController.text.toString(),
       dateTime: now.toString(),
     );
 
@@ -1813,7 +1815,7 @@ class _expensesState extends State<expenses> {
                               Navigator.pushReplacement(context,
                                   MaterialPageRoute(
                                 builder: (context) {
-                                  return EventHomePage(
+                                  return expensesBottomSheet(
                                     eventwallet: widget.eventwallet,
                                     user: widget.user,
                                   );
@@ -1859,7 +1861,7 @@ class _expensesState extends State<expenses> {
                             Navigator.pushReplacement(context,
                                 MaterialPageRoute(
                               builder: (context) {
-                                return EventHomePage(
+                                return expensesBottomSheet(
                                   eventwallet: widget.eventwallet,
                                   user: widget.user,
                                 );
@@ -1911,9 +1913,9 @@ class _expensesState extends State<expenses> {
       operation: null,
       amount: amountPayment,
       operationValue: null,
-      total: totalAmountPayment,
-      countMembers: memberCountPayment,
-      totalPerPerson: totalPerPersonPayment,
+      total: totalAmount,
+      countMembers: memberCount,
+      totalPerPerson: totalAmountPerPerson,
       totalWithMembers: totalWithPersonPayment,
       member: personalTransition,
     );
@@ -1939,7 +1941,7 @@ class _expensesState extends State<expenses> {
                               Navigator.pushReplacement(context,
                                   MaterialPageRoute(
                                 builder: (context) {
-                                  return EventHomePage(
+                                  return expensesBottomSheet(
                                     eventwallet: widget.eventwallet,
                                     user: widget.user,
                                   );
@@ -1984,7 +1986,7 @@ class _expensesState extends State<expenses> {
                             Navigator.pushReplacement(context,
                                 MaterialPageRoute(
                               builder: (context) {
-                                return EventHomePage(
+                                return expensesBottomSheet(
                                   eventwallet: widget.eventwallet,
                                   user: widget.user,
                                 );
@@ -2033,7 +2035,6 @@ class _expensesState extends State<expenses> {
       sId: ObjectId().toString(),
       title: string,
       type: "Statement",
-      CalculationTitle: string2,
       statementType: actionSelected == 1 ? "Payment" : "Expenditure",
       isCustomOperation: checkboxValue,
       dateTime: now.toString(),
@@ -2068,7 +2069,7 @@ class _expensesState extends State<expenses> {
                               Navigator.pushReplacement(context,
                                   MaterialPageRoute(
                                 builder: (context) {
-                                  return EventHomePage(
+                                  return expensesBottomSheet(
                                     eventwallet: widget.eventwallet,
                                     user: widget.user,
                                   );
@@ -2113,7 +2114,7 @@ class _expensesState extends State<expenses> {
                             Navigator.pushReplacement(context,
                                 MaterialPageRoute(
                               builder: (context) {
-                                return EventHomePage(
+                                return expensesBottomSheet(
                                   eventwallet: widget.eventwallet,
                                   user: widget.user,
                                 );

@@ -1,13 +1,16 @@
 import 'package:droptel/Model/Mongodb.dart';
+import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/ActivityList.dart';
+import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Pages/Expenses/expenses.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:intl/intl.dart';
 
+import '../Constants/Logger.dart';
 import '../Obj/User.dart';
 import '../Widget/snackbar.dart';
 
@@ -29,11 +32,10 @@ class _EventHomePageState extends State<EventHomePage> {
   Wallet? wallet;
 
   bool isLoading = false;
-  final PanelController _panelController = PanelController();
 
-  getWalletDetails() async {
+  Future<void> getWalletDetails() async {
     isLoading = true;
-    Future<dynamic>? result = Mongodb.FindEventDetails(Eventwallet!.sId!);
+    Future? result = Mongodb.FindEventDetails(Eventwallet!.sId!);
     result
         ?.then((value) => {
               if (value != null)
@@ -69,7 +71,13 @@ class _EventHomePageState extends State<EventHomePage> {
     super.initState();
     Eventwallet = widget.eventwallet;
     user = widget.user;
-    getWalletDetails();
+    if (wallet == null) {
+      getWalletDetails();
+      isLoading = false;
+    } else {
+      isLoading = false;
+      wallet!.activityList!.sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
+    }
   }
 
   double height = 0;
@@ -80,116 +88,76 @@ class _EventHomePageState extends State<EventHomePage> {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
-            backgroundColor: Colors.white.withOpacity(0.4),
-            actions: [
-              IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.summarize,
-                    color: Colors.black.withOpacity(0.7),
-                  )),
-              IconButton(
-                  onPressed: () {
-                    setState(() {});
-                  },
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.black.withOpacity(0.7),
-                  ))
-            ],
-            title: Text(
-              Eventwallet?.title ?? "Event",
-              style: GoogleFonts.lato(
-                  color: Colors.green.withOpacity(0.8),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
-            ),
-            shadowColor: Colors.transparent,
-            bottom: PreferredSize(
-              preferredSize: Size.fromHeight(0),
-              child: Opacity(
-                opacity: 0.1,
-                child: Container(
-                  height: 0.5,
-                ),
-              ),
-            )),
-        body: SlidingUpPanel(
-          body: MainBody(),
-          controller: _panelController,
-          panelBuilder: (ScrollController sc) => Panel(sc),
+        child: Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return expenses(
+              eventwallet: Eventwallet!,
+              user: user!,
+            );
+          }));
+          setState(() {});
+        },
+        label: Text(
+          "Add Expense",
+          style: GoogleFonts.lato(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 15,
+              fontWeight: FontWeight.bold),
         ),
+        icon: Icon(
+          Icons.add,
+          color: Colors.white.withOpacity(0.8),
+        ),
+        backgroundColor: Colors.lightBlue,
       ),
-    );
-  }
-
-  bool flag = false;
-  Map<int, Widget> items = {};
-  Widget Panel(ScrollController scrollController) {
-    if (!flag) {
-      items[0] = expenses(eventwallet: Eventwallet!, user: user!);
-      // items.add(part1());
-      // items.add(part2());
-
-      flag = true;
-    }
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: 1,
-                    itemBuilder: (context, index) {
-                      return Builder(
-                        builder: (context) {
-                          return Focus(
-                            onFocusChange: (value) {
-                              if (value) {
-                                if (!_panelController.isPanelOpen) {
-                                  _panelController.open();
-                                }
-                              }
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(
-                                  left: 10, right: 10, bottom: 10),
-                              child: Builder(
-                                builder: (context) {
-                                  return index == items.length
-                                      ? Container(
-                                          height: 20,
-                                        )
-                                      : items.values.elementAt(index);
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            isLoading
-                ? Opacity(
-                    opacity: 0.5,
-                    child: loading(
-                        heightBox: MediaQuery.of(context).size.height,
-                        widthBox: MediaQuery.of(context).size.width))
-                : Container(),
+      appBar: AppBar(
+          elevation: 5,
+          backgroundColor: Colors.lightBlueAccent,
+          iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
+          actions: [
+            IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  Icons.summarize,
+                  color: Colors.black.withOpacity(0.7),
+                )),
+            IconButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return expenses(
+                      eventwallet: Eventwallet!,
+                      user: user!,
+                    );
+                  }));
+                  setState(() {});
+                },
+                icon: Icon(
+                  Icons.edit,
+                  color: Colors.black.withOpacity(0.7),
+                ))
           ],
-        ),
-      ),
-    );
+          title: Text(
+            Eventwallet?.title ?? "Event",
+            style: GoogleFonts.lato(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
+          ),
+          shadowColor: Colors.lightBlue,
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(0),
+            child: Opacity(
+              opacity: 0.1,
+              child: Container(
+                height: 0.5,
+              ),
+            ),
+          )),
+      body: MainBody(),
+    ));
   }
 
   MainBody() {
@@ -217,8 +185,8 @@ class _EventHomePageState extends State<EventHomePage> {
         right: true,
         child: RefreshIndicator(
             onRefresh: () async {
-              setState(() {
-                getWalletDetails();
+              setState(() async {
+                await getWalletDetails();
               });
             },
             notificationPredicate: (ScrollNotification notification) {
@@ -227,13 +195,15 @@ class _EventHomePageState extends State<EventHomePage> {
             child: SingleChildScrollView(
                 child: Column(children: <Widget>[
               Container(
-                  child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: 1,
-                itemBuilder: (BuildContext context, int index) {
-                  return activityList();
-                },
-              ))
+                child: ListView.builder(
+                  scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemCount: 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    return activityList();
+                  },
+                ),
+              )
             ]))));
   }
 
@@ -246,23 +216,377 @@ class _EventHomePageState extends State<EventHomePage> {
           width: width,
           child: Column(children: [
             Expanded(
-                child: Container(
-                    child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: wallet?.activityList?.length ?? 0,
-              itemBuilder: (BuildContext context, int index) {
-                return activityCard(wallet!.activityList![index]);
-              },
-            )))
+              child: Container(
+                child: FutureBuilder<dynamic>(
+                  future: Mongodb.FindEventDetails(Eventwallet!.sId!),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return loading(
+                          heightBox: double.maxFinite,
+                          widthBox: double.maxFinite);
+                    } else if (snapshot.hasError) {
+                      return Center(
+                          child: Container(
+                        child: Text(
+                          'Connection Error',
+                          style: GoogleFonts.poppins(
+                              fontSize: 15, color: Colors.red),
+                        ),
+                      ));
+                    } else {
+                      final data = snapshot.data;
+                      if (data?.length == 0) {
+                        return Center(
+                            child: Text(
+                          'No Events',
+                          style: TextStyle(
+                              fontSize: 20.0, fontWeight: FontWeight.w500),
+                        ));
+                      }
+                      return NotificationListener<
+                          OverscrollIndicatorNotification>(
+                        onNotification: (overscroll) {
+                          overscroll.disallowIndicator();
+                          return true;
+                        },
+                        child: ListView.builder(
+                          padding:
+                              EdgeInsets.only(top: 20, bottom: height * 0.4),
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemCount: data.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            wallet = Wallet.fromJson(data);
+                            wallet!.activityList!.sort(
+                                (a, b) => b.dateTime!.compareTo(a.dateTime!));
+                            return makeListTile(wallet!.activityList![index]);
+                          },
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            )
           ]),
         ),
       ],
     );
   }
 
-  activityCard(ActivityList activityList) {
+  makeListTile(ActivityList items) {
+    DateTime dateTime = DateTime.parse(items!.dateTime!);
+    DateFormat formatter = DateFormat('hh:mm aa\ndd-MMM-yyyy');
+    String formatted = formatter.format(dateTime);
+    return items.type == "Activity"
+        ? CardActivity(items, formatted)
+        : CardStatement(items, formatted);
+  }
+
+  CardStatement(ActivityList items, String formatted) {
     return Card(
-        child: Text(
-            "${activityList.title} ${activityList.dateTime}" ?? "No Title"));
+        elevation: 8.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        color: items.type == "Activity"
+            ? Colors.lightBlueAccent
+            : (items as Statement).statementType == "Payment"
+                ? Colors.lime
+                : Colors.green,
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 16.0),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.0),
+          onTap: () {
+            logger.d("Tapped");
+          },
+          child: IntrinsicHeight(
+              child: Container(
+            margin: EdgeInsets.only(
+              top: 10,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                          width: width * 0.4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(items.title ?? "Title",
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                              SizedBox(height: 5),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  if (items.type == "Activity" &&
+                                      ((items as Activity).description !=
+                                              null &&
+                                          (items).description != ""))
+                                    Text(items.description!,
+                                        style: TextStyle(color: Colors.white)),
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  Text(formatted ?? "Date",
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )),
+                      Expanded(
+                          child: Container(
+                        width: width * 0.4,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                    "${(items as Statement).statementType == "Payment" ? "Payemnt" : "Expenditure"}: ",
+                                    style: GoogleFonts.robotoMono(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                Expanded(
+                                    child: Text(
+                                        "${(items as Statement).statementType == "Payment" ? (items.amount! * -1).toString() : items.amount.toString()}",
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold))),
+                              ],
+                            ),
+                            if ((items as Statement).statementType ==
+                                    "Expenditure" &&
+                                items.isCustomOperation == true)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                        items.calculationTitle ?? "Title",
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "${items.operation == "Percentage (%)" ? "%" : items.operation == "Addition (+)" ? "+" : items.operation == "Subtraction (-)" ? "-" : items.operation == "Multiplication (x)" ? "x" : "/"}",
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      SizedBox(
+                                        width: 7,
+                                      ),
+                                      Text(
+                                        items.operationValue.toString(),
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            if ((items as Statement).statementType ==
+                                "Expenditure")
+                              Row(
+                                children: [
+                                  Text("Subtotal: ",
+                                      style: GoogleFonts.robotoMono(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  Expanded(
+                                      child: Text(
+                                          (items as Statement).total.toString(),
+                                          textAlign: TextAlign.end,
+                                          style: GoogleFonts.robotoMono(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold))),
+                                ],
+                              ),
+                            Row(
+                              children: [
+                                Text("Total Member: ",
+                                    style: GoogleFonts.robotoMono(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                Expanded(
+                                    child: Text(
+                                        (items as Statement)
+                                            .countMembers
+                                            .toString(),
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold))),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text("Total: ",
+                                    style: GoogleFonts.robotoMono(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                                Expanded(
+                                    child: Text(
+                                        "${(items as Statement).statementType == "Payment" ? (items.totalWithMembers! * -1).toString() : items.totalWithMembers.toString()}",
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold))),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )),
+        ));
+  }
+
+  CardActivity(ActivityList items, String formatted) {
+    return Card(
+        elevation: 8.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        color: items.type == "Activity"
+            ? Colors.lightBlueAccent
+            : (items as Statement).statementType == "Payment"
+                ? Colors.lime
+                : Colors.green,
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.0),
+          onTap: () {
+            logger.d("Tapped");
+          },
+          child: IntrinsicHeight(
+              child: Container(
+            margin: EdgeInsets.only(
+              top: 10,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                          width: width * 0.4,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(items.title ?? "Title",
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                              SizedBox(height: 5),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  SizedBox(
+                                    height: 5,
+                                  ),
+                                  if (items.type == "Activity" &&
+                                      ((items as Activity).description !=
+                                              null &&
+                                          (items).description != ""))
+                                    Text(items.description!,
+                                        style: TextStyle(color: Colors.white)),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                  Text(formatted ?? "Date",
+                                      style: GoogleFonts.inter(
+                                          color: Colors.white.withOpacity(0.8),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(
+                                    height: 15,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )),
+                      Expanded(
+                          child: Container(
+                        width: width * 0.4,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                Text("Expenses: ",
+                                    style: GoogleFonts.robotoMono(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Row(
+                              children: [
+                                Text("Paid: ",
+                                    style: GoogleFonts.robotoMono(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )),
+        ));
   }
 }

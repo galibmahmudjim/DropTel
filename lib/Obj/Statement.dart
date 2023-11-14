@@ -5,6 +5,7 @@ class Statement extends ActivityList {
   bool? _isCustomOperation;
   String? _operation;
   double? _amount;
+  String? _calculationTitle;
   String? _statementType;
   double? _operationValue;
   double? _total;
@@ -21,6 +22,7 @@ class Statement extends ActivityList {
       bool? isCustomOperation,
       String? dateTime,
       String? operation,
+      String? CalculationTitle,
       double? amount,
       double? operationValue,
       double? total,
@@ -33,6 +35,9 @@ class Statement extends ActivityList {
     }
     if (title != null) {
       super.title = title;
+    }
+    if (CalculationTitle != null) {
+      this._calculationTitle = CalculationTitle;
     }
     if (type != null) {
       super.type = type;
@@ -74,6 +79,10 @@ class Statement extends ActivityList {
   set sId(String? sId) => super.sId = sId;
   String? get title => super.title;
   set title(String? title) => super.title = title;
+
+  String? get calculationTitle => _calculationTitle;
+  set calculationTitle(String? calculationTitle) =>
+      _calculationTitle = calculationTitle;
   String? get type => super.type;
   set type(String? type) => super.type = type;
   String? get statementType => _statementType;
@@ -116,6 +125,8 @@ class Statement extends ActivityList {
     _amount = json['amount'];
     _operationValue = json['operationValue'];
     _total = json['total'];
+
+    _calculationTitle = json['CalculationTitle'];
     _countMembers = json['countMembers'];
     _totalPerPerson = json['totalPerPerson'];
     _totalWithMembers = json['totalWithMembers'];
@@ -136,6 +147,8 @@ class Statement extends ActivityList {
     data['isCustomOperation'] = this._isCustomOperation;
     data['DateTime'] = super.dateTime;
     data['Operation'] = this._operation;
+    data['CalculationTitle'] = this._calculationTitle;
+
     data['amount'] = this._amount;
     data['operationValue'] = this._operationValue;
     data['total'] = this._total;

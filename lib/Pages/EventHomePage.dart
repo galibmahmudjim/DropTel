@@ -185,9 +185,7 @@ class _EventHomePageState extends State<EventHomePage> {
         right: true,
         child: RefreshIndicator(
             onRefresh: () async {
-              setState(() async {
-                await getWalletDetails();
-              });
+              await getWalletDetails();
             },
             notificationPredicate: (ScrollNotification notification) {
               return notification.depth == 1;
@@ -235,13 +233,15 @@ class _EventHomePageState extends State<EventHomePage> {
                       ));
                     } else {
                       final data = snapshot.data;
-                      if (data?.length == 0) {
+                      if (data?.length == 0 || data == null) {
                         return Center(
                             child: Text(
-                          'No Events',
+                          'No Activity Found',
                           style: TextStyle(
                               fontSize: 20.0, fontWeight: FontWeight.w500),
                         ));
+                      } else {
+                        wallet = Wallet.fromJson(data);
                       }
                       return NotificationListener<
                           OverscrollIndicatorNotification>(
@@ -254,9 +254,8 @@ class _EventHomePageState extends State<EventHomePage> {
                               EdgeInsets.only(top: 20, bottom: height * 0.4),
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: data.length,
+                          itemCount: wallet?.activityList?.length,
                           itemBuilder: (BuildContext context, int index) {
-                            wallet = Wallet.fromJson(data);
                             wallet!.activityList!.sort(
                                 (a, b) => b.dateTime!.compareTo(a.dateTime!));
                             return makeListTile(wallet!.activityList![index]);

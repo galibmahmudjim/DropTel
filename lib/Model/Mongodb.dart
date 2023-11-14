@@ -1,3 +1,4 @@
+import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mongo_dart/mongo_dart.dart';
@@ -8,6 +9,7 @@ class Mongodb {
   static Db db = null as Db;
   static var User_collection;
   static var Event_collection;
+  static DbCollection Event_Wallet_collection = null as DbCollection;
 
   static connect() async {
     await dotenv.load(fileName: "lib/.env");
@@ -16,6 +18,7 @@ class Mongodb {
     await db.open();
     User_collection = db.collection('User');
     Event_collection = db.collection('EventWallet');
+    Event_Wallet_collection = db.collection('EventWalletDetails');
     return db;
   }
 
@@ -106,5 +109,28 @@ class Mongodb {
       connect();
     }
     return Event_collection.remove({"_id": eventID});
+  }
+
+  static Future<dynamic>? EventWalletDetails(Wallet wallet) async {
+    if (db.isConnected == false) {
+      connect();
+    }
+
+    dynamic query = {'EventID': wallet.eventID};
+    dynamic update = wallet.toJson();
+    var options = {"upsert": true};
+    var result =
+        await Event_Wallet_collection.update(query, update, upsert: true);
+    return result;
+  }
+
+  static Future<dynamic>? FindEventDetails(String eventID) async {
+    if (db.isConnected == false ||
+        !db.masterConnection.connected ||
+        db.masterConnection == null) {
+      connect();
+    }
+    final result = await Event_Wallet_collection.findOne({"EventID": eventID});
+    return await result;
   }
 }

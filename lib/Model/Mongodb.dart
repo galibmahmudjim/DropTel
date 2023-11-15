@@ -6,7 +6,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import '../Obj/User.dart';
 
 class Mongodb {
-  static Db db = null as Db;
+  static var db = null as Db;
   static var User_collection;
   static var Event_collection;
   static DbCollection Event_Wallet_collection = null as DbCollection;
@@ -33,7 +33,9 @@ class Mongodb {
 
   static Future<dynamic?> authenticateUser(
       String email, String password) async {
-    if (db.isConnected == false) {
+    if (db == null) {
+      await connect();
+    } else if (db!.isConnected == false) {
       await connect();
     }
     dynamic result = await User_collection.findOne({

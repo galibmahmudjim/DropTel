@@ -1,9 +1,11 @@
+import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Theme/theme.dart';
 import 'package:droptel/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Mongodb.connect();
 
   runApp(MyApp());
 }

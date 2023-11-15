@@ -7,7 +7,6 @@ import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Pages/AcitivityStatementList.dart';
 import 'package:droptel/Pages/EventSummery.dart';
 import 'package:droptel/Pages/expenses.dart';
-import 'package:droptel/Pages/homepage.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +17,7 @@ import '../Obj/User.dart';
 import '../Util/ExpenseCalculate.dart';
 import '../Widget/snackbar.dart';
 import 'EventStatementSummery.dart';
+import 'homepage.dart';
 
 class EventHomePage extends StatefulWidget {
   final eventWallet eventwallet;
@@ -51,13 +51,12 @@ class _EventHomePageState extends State<EventHomePage> {
         ?.then((value) => {
               if (value != null)
                 {
+                  wallet = Wallet.fromJson(value),
+                  wallet!.activityList!
+                      .sort((a, b) => b.dateTime!.compareTo(a.dateTime!)),
                   setState(() {
                     isLoading = false;
-                    wallet = Wallet.fromJson(value);
-
-                    wallet!.activityList!
-                        .sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
-                  })
+                  }),
                 }
               else
                 {
@@ -175,50 +174,51 @@ class _EventHomePageState extends State<EventHomePage> {
                       ),
                     ]),
             IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Delete Event',
-                              style: TextStyle(
-                                  fontSize: 20.0, fontWeight: FontWeight.w500)),
-                          content: Text(
-                              'Are you sure you want to delete this event?',
-                              style: TextStyle(
-                                  fontSize: 15.0, fontWeight: FontWeight.w400)),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: Text('Cancel')),
-                            TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Delete Event',
+                            style: TextStyle(
+                                fontSize: 20.0, fontWeight: FontWeight.w500)),
+                        content: Text(
+                            'Are you sure you want to delete this event?',
+                            style: TextStyle(
+                                fontSize: 15.0, fontWeight: FontWeight.w400)),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text('Cancel')),
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  isLoading = true;
+                                });
 
-                                  Mongodb.deleteEvent(
-                                      widget.eventwallet.sId.toString());
+                                Mongodb.deleteEvent(
+                                    widget.eventwallet.sId.toString());
 
-                                  Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return HomePage(
-                                      user: user!,
-                                    );
-                                  }));
-                                },
-                                child: Text('Delete')),
-                          ],
-                        );
-                      });
-                  setState(() {});
-                },
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.black.withOpacity(0.7),
-                )),
+                                Navigator.pushReplacement(context,
+                                    MaterialPageRoute(builder: (context) {
+                                  return HomePage(
+                                    user: user!,
+                                  );
+                                }));
+                              },
+                              child: Text('Delete')),
+                        ],
+                      );
+                    });
+                setState(() {});
+              },
+              icon: Icon(
+                Icons.delete,
+                color: Colors.black.withOpacity(0.7),
+              ),
+            ),
           ],
           title: Text(
             Eventwallet?.title ?? "Event",

@@ -284,6 +284,7 @@ class _EventSummeryState extends State<EventSummery> {
               child: Row(
                 children: [
                   Expanded(
+                    flex: 2,
                     child: Row(
                       children: [
                         Container(
@@ -316,47 +317,39 @@ class _EventSummeryState extends State<EventSummery> {
                                     fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            if (member.email != "")
-                              SizedBox(
-                                height: 5,
-                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
                             Container(
                               child: Text(
-                                member.email!,
-                                style: GoogleFonts.inter(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
+                                "Due Expense: ",
+                                style: GoogleFonts.robotoMono(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Container(
+                              child: Text(
+                                "৳ ${EventDueIndividual(wallet, member.index!).toString()}",
+                                style: GoogleFonts.robotoMono(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            child: Text(
-                              "Due Expense: ",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Container(
-                            child: Text(
-                              "৳ ${EventDueIndividual(wallet, member.index!).toString()}",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
                 ],
               )),

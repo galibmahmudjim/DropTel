@@ -288,7 +288,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
               child: Row(
                 children: [
                   Expanded(
-                    flex: 4,
+                    flex: 2,
                     child: Row(
                       children: [
                         Container(
@@ -321,24 +321,13 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                                     fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                             ),
-                            if (member.email != "")
-                              SizedBox(
-                                height: 5,
-                              ),
-                            Container(
-                              child: Text(
-                                "${member.email!.length > 15 ? "${member.email?.substring(0, 15)} ..." : member.email}",
-                                style: GoogleFonts.inter(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ),
                           ],
                         ),
                       ],
                     ),
                   ),
                   Expanded(
-                    flex: 5,
+                    flex: 3,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,

@@ -60,12 +60,9 @@ class _HomePageState extends State<HomePage> {
             timeout = false;
             isLoading = false;
           });
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => HomePageLogin()));
         }
       });
       if (user != null) {
-        print(user.toJson());
       } else {
         setState(() {
           timeout = false;

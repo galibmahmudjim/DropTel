@@ -117,7 +117,7 @@ class _expenseActivityState extends State<expenseActivity> {
                   setState(() {});
                 },
                 icon: Icon(
-                  Icons.edit,
+                  Icons.delete,
                   color: Colors.black.withOpacity(0.7),
                 ))
           ],

@@ -3,6 +3,7 @@ import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
+import 'package:droptel/Pages/ActivitySummery.dart';
 import 'package:droptel/Pages/StatementSummery.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,19 +37,10 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
   User user = User();
   Activity activity = Activity();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    event = widget.event;
-    user = widget.user;
-    getAllData();
-  }
-
   bool isLoading = false;
   getAllData() async {
     Future<dynamic>? data = Mongodb.FindEventDetails(event.sId!);
-    isLoading = true;
+
     data?.then((value) => {
           setState(() {
             wallet = Wallet.fromJson(value);
@@ -59,6 +51,16 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
           })
         });
     setState(() {});
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    event = widget.event;
+    user = widget.user;
+    isLoading = true;
+    getAllData();
   }
 
   double height = 0;
@@ -101,7 +103,16 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
           iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
           actions: [
             IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return ActivitySummery(
+                      user: user,
+                      activity: activity,
+                      wallet: wallet,
+                      event: event,
+                    );
+                  }));
+                },
                 icon: Icon(
                   Icons.summarize,
                   color: Colors.black.withOpacity(0.7),
@@ -205,6 +216,8 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
                           heightBox: double.maxFinite,
                           widthBox: double.maxFinite);
                     } else if (snapshot.hasError) {
+                      isLoading = false;
+
                       return Center(
                           child: Container(
                         child: Text(

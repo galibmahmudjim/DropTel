@@ -62,15 +62,6 @@ class _HomePageState extends State<HomePage> {
           });
         }
       });
-      if (user != null) {
-      } else {
-        setState(() {
-          timeout = false;
-          isLoading = false;
-        });
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => HomePageLogin()));
-      }
     } else {
       setState(() {
         timeout = false;

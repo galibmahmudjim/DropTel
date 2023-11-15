@@ -19,3 +19,7 @@ Logger logger = Logger(
 log_check() {
   logger.d("Checked");
 }
+
+loggerPrint(var message) {
+  logger.d(message);
+}

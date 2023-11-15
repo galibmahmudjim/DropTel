@@ -35,7 +35,7 @@ class PersonalTransition {
     _sId = json['_id'];
     _amount = json['Amount'];
     _type = json['Type'];
-    _member = json['EventGuest'] != null
+    _member = json['Members'] != null
         ? new EventGuest.fromJson(json['Members'])
         : null;
   }

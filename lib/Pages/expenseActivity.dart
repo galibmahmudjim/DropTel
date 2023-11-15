@@ -806,7 +806,6 @@ class _expenseActivityState extends State<expenseActivity> {
   }
 
   reviewStatement() {
-    logger.d("reviewStatement");
     return Card(
         elevation: 1,
         color: Colors.indigo[500]?.withOpacity(0.7),
@@ -1577,7 +1576,6 @@ class _expenseActivityState extends State<expenseActivity> {
                   wallet.activityList
                       ?.removeWhere((element) => element.sId == widget.id),
                   wallet.activityList?.add(activity),
-                  logger.d(wallet.toJson()),
                   Mongodb.EventWalletDetails(wallet)?.then((value) => {
                         if (value != null)
                           {

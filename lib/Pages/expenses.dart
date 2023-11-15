@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:objectid/objectid.dart';
 
+import '../Constants/Logger.dart';
 import '../Obj/User.dart';
 import '../Widget/snackbar.dart';
 
@@ -2061,6 +2062,8 @@ class _expensesState extends State<expenses> {
                   stList = wallet.activityList!.map((e) => e).toList(),
                   stList.add(statement),
                   wallet.activityList = stList,
+                  logger.d((statement as Statement).toJson()),
+                  logger.d(wallet.toJson()),
                   Mongodb.EventWalletDetails(wallet)?.then((value) => {
                         if (value != null)
                           {

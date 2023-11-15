@@ -1,9 +1,9 @@
-import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
+import 'package:droptel/Pages/StatementSummery.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -289,7 +289,13 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
         child: InkWell(
           borderRadius: BorderRadius.circular(20.0),
           onTap: () {
-            logger.d("Tapped");
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return StatementSummery(
+                user: user,
+                statement: items,
+              );
+            }));
+            setState(() {});
           },
           child: IntrinsicHeight(
               child: Container(

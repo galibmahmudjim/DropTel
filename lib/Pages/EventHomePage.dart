@@ -11,9 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../Constants/Logger.dart';
 import '../Obj/User.dart';
 import '../Widget/snackbar.dart';
+import 'StatementSummery.dart';
 
 class EventHomePage extends StatefulWidget {
   final eventWallet eventwallet;
@@ -44,6 +44,7 @@ class _EventHomePageState extends State<EventHomePage> {
                   setState(() {
                     isLoading = false;
                     wallet = Wallet.fromJson(value);
+
                     wallet!.activityList!
                         .sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
                   })
@@ -306,7 +307,12 @@ class _EventHomePageState extends State<EventHomePage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(20.0),
           onTap: () {
-            logger.d("Tapped");
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return StatementSummery(
+                user: user!,
+                statement: items,
+              );
+            }));
           },
           child: IntrinsicHeight(
               child: Container(
@@ -342,8 +348,9 @@ class _EventHomePageState extends State<EventHomePage> {
                                   if (items.type == "Activity" &&
                                       ((items as Activity).description !=
                                               null &&
-                                          (items).description != ""))
-                                    Text(items.description!,
+                                          (items as Activity).description !=
+                                              ""))
+                                    Text((items as Activity).description!,
                                         style: TextStyle(color: Colors.white)),
                                   SizedBox(
                                     height: 5,

@@ -9,7 +9,7 @@ import '../Obj/Activity.dart';
 import '../Obj/User.dart';
 import '../Obj/Wallet.dart';
 import '../Util/AllTransactions.dart';
-import 'StatementSummery.dart';
+import 'ActivityStatementSummery.dart';
 
 class IndividualSummery extends StatefulWidget {
   final User user;
@@ -95,7 +95,7 @@ class _IndividualSummeryState extends State<IndividualSummery> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            height: height * 0.12,
+                            height: 30,
                           ),
                           Container(
                             padding: EdgeInsets.only(left: 30),
@@ -131,7 +131,7 @@ class _IndividualSummeryState extends State<IndividualSummery> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: height * 0.12,
+                          height: 30,
                         ),
                         Container(
                           child: Text(
@@ -161,7 +161,7 @@ class _IndividualSummeryState extends State<IndividualSummery> {
                 Container(
                   width: width,
                   padding: EdgeInsets.all(20),
-                  margin: EdgeInsets.only(left: 10, right: 10),
+                  margin: EdgeInsets.only(left: 10, right: 10, top: 20),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     color: Color.fromRGBO(66, 34, 74, 1),
@@ -286,9 +286,10 @@ class _IndividualSummeryState extends State<IndividualSummery> {
           borderRadius: BorderRadius.circular(20.0),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return StatementSummery(
+              return ActivityStatementSummery(
                 user: user,
                 statement: statement,
+                title: activity.title!,
               );
             }));
 
@@ -299,176 +300,77 @@ class _IndividualSummeryState extends State<IndividualSummery> {
             margin: EdgeInsets.only(
               top: 10,
             ),
-            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
             child: IntrinsicHeight(
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                          width: width * 0.4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(statement?.title ?? "Title",
-                                  style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                              SizedBox(height: 5),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  Text(formatted,
-                                      style: GoogleFonts.inter(
-                                          color: Colors.white.withOpacity(0.8),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500)),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )),
                       Expanded(
-                          child: Container(
-                        width: width * 0.4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        flex: 1,
+                        child: Container(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                    "${(statement as Statement).statementType == "Payment" ? "Payemnt" : "Expenditure"}: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                Expanded(
-                                    child: Text(
-                                        "${(statement).statementType == "Payment" ? (statement.amount!).toString() : statement.amount.toString()}",
-                                        textAlign: TextAlign.end,
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold))),
-                              ],
-                            ),
-                            if ((statement).statementType == "Expenditure" &&
-                                statement.isCustomOperation == true)
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                        statement.calculationTitle ?? "Title",
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold)),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "${statement.operation == "Percentage (%)" ? "%" : statement.operation == "Addition (+)" ? "+" : statement.operation == "Subtraction (-)" ? "-" : statement.operation == "Multiplication (x)" ? "x" : "/"}",
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      SizedBox(
-                                        width: 7,
-                                      ),
-                                      Text(
-                                        statement.operationValue.toString(),
-                                        textAlign: TextAlign.end,
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            if ((statement).statementType == "Expenditure")
-                              Row(
-                                children: [
-                                  Text("Subtotal: ",
-                                      style: GoogleFonts.robotoMono(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold)),
-                                  Expanded(
-                                      child: Text((statement).total.toString(),
-                                          textAlign: TextAlign.end,
-                                          style: GoogleFonts.robotoMono(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold))),
-                                ],
-                              ),
-                            Row(
-                              children: [
-                                Text("Total Member: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                Expanded(
-                                    child: Text(
-                                        (statement).countMembers.toString(),
-                                        textAlign: TextAlign.end,
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold))),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text("Per Person: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                Expanded(
-                                    child: Text(
-                                        (statement).totalPerPerson.toString(),
-                                        textAlign: TextAlign.end,
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold))),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Text("Total: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                                Expanded(
-                                    child: Text(
-                                        "${(statement).statementType == "Payment" ? (statement.totalWithMembers!).toString() : statement.totalWithMembers.toString()}",
-                                        textAlign: TextAlign.end,
-                                        style: GoogleFonts.robotoMono(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold))),
+                            Text(statement?.title ?? "Title",
+                                style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                            SizedBox(height: 5),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(formatted,
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500)),
+                                SizedBox(
+                                  height: 15,
+                                ),
                               ],
                             ),
                           ],
-                        ),
-                      )),
+                        )),
+                      ),
+                      Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: EdgeInsets.only(left: 10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                        "${(statement as Statement).statementType == "Payment" ? "Payemnt" : "Expenditure"}: ",
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold)),
+                                    Expanded(
+                                        child: Text(
+                                            statement.totalPerPerson.toString(),
+                                            textAlign: TextAlign.end,
+                                            style: GoogleFonts.robotoMono(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )),
                     ],
                   )
                 ],

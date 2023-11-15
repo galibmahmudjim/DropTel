@@ -1,6 +1,6 @@
-import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/EventGuest.dart';
 import 'package:droptel/Obj/eventWallet.dart';
+import 'package:droptel/Pages/EventIndividualSummery.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -8,32 +8,28 @@ import 'package:intl/intl.dart';
 import '../Obj/User.dart';
 import '../Obj/Wallet.dart';
 import '../Util/ExpenseCalculate.dart';
-import 'ActivityIndividualSummery.dart';
 
-class ActivitySummery extends StatefulWidget {
+class EventSummery extends StatefulWidget {
   final User user;
-  final Activity activity;
   final Wallet wallet;
   final eventWallet event;
 
-  const ActivitySummery(
+  const EventSummery(
       {super.key,
       required this.user,
-      required this.activity,
       required this.wallet,
       required this.event});
 
   @override
-  State<ActivitySummery> createState() => _ActivitySummeryState();
+  State<EventSummery> createState() => _EventSummeryState();
 }
 
-class _ActivitySummeryState extends State<ActivitySummery> {
+class _EventSummeryState extends State<EventSummery> {
   double height = 0;
   double width = 0;
   double total = 0;
 
   User user = User();
-  Activity activity = Activity();
   Wallet wallet = Wallet();
   eventWallet event = eventWallet();
   @override
@@ -41,7 +37,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
     user = widget.user;
     event = widget.event;
     wallet = widget.wallet;
-    activity = widget.activity;
+
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return SafeArea(
@@ -73,12 +69,12 @@ class _ActivitySummeryState extends State<ActivitySummery> {
   }
 
   Body() {
-    DateTime date = DateTime.parse(activity.dateTime!);
+    DateTime date = DateTime.parse(event.dateCreated!);
     DateFormat formatter = DateFormat('hh-mm aa\ndd-MMM-yyyy');
     String formatted = formatter.format(date);
-    var expenditure = ActivityExpense(activity);
-    var paid = ActivityPayment(activity);
-    total = ActivityDueExpense(activity);
+    var expenditure = EventExpense(wallet);
+    var paid = EventPayment(wallet);
+    total = EventDue(wallet);
 
     var countMembers = event.eventGuest?.length;
     return Container(
@@ -103,7 +99,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                             padding: EdgeInsets.only(left: 30),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              activity.title!,
+                              event.title!,
                               style: GoogleFonts.inter(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
@@ -269,14 +265,14 @@ class _ActivitySummeryState extends State<ActivitySummery> {
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return IndividualSummery(
-                activity: activity,
-                user: user,
-                wallet: wallet,
-                eventGuest: member,
-              );
-            }));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EventIndividualSummery(
+                          user: user,
+                          wallet: wallet,
+                          eventGuest: member,
+                        )));
           },
           child: Container(
               margin: EdgeInsets.only(bottom: 10),
@@ -353,7 +349,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                           ),
                           Container(
                             child: Text(
-                              "৳ ${ActivityIndividualDue(activity, member.index!).toString()}",
+                              "৳ ${EventDueIndividual(wallet, member.index!).toString()}",
                               style: GoogleFonts.robotoMono(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),

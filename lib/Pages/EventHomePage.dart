@@ -5,6 +5,7 @@ import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Pages/AcitivityStatementList.dart';
+import 'package:droptel/Pages/EventSummery.dart';
 import 'package:droptel/Pages/expenses.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../Obj/User.dart';
+import '../Util/ExpenseCalculate.dart';
 import '../Widget/snackbar.dart';
-import 'StatementSummery.dart';
+import 'EventStatementSummery.dart';
 
 class EventHomePage extends StatefulWidget {
   final eventWallet eventwallet;
@@ -121,7 +123,15 @@ class _EventHomePageState extends State<EventHomePage> {
           iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
           actions: [
             IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return EventSummery(
+                      wallet: wallet!,
+                      event: Eventwallet!,
+                      user: user!,
+                    );
+                  }));
+                },
                 icon: Icon(
                   Icons.summarize,
                   color: Colors.black.withOpacity(0.7),
@@ -308,10 +318,10 @@ class _EventHomePageState extends State<EventHomePage> {
           borderRadius: BorderRadius.circular(20.0),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return StatementSummery(
-                user: user!,
-                statement: items,
-              );
+              return EventStatementSummery(
+                  user: widget.user,
+                  statement: items,
+                  title: Eventwallet!.title!);
             }));
           },
           child: IntrinsicHeight(
@@ -580,6 +590,15 @@ class _EventHomePageState extends State<EventHomePage> {
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
+                                Expanded(
+                                    child: Text(
+                                        ActivityExpense(items as Activity)
+                                            .toString(),
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold))),
                               ],
                             ),
                             SizedBox(
@@ -592,6 +611,15 @@ class _EventHomePageState extends State<EventHomePage> {
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold)),
+                                Expanded(
+                                    child: Text(
+                                        ActivityPayment(items)
+                                            .toStringAsFixed(2),
+                                        textAlign: TextAlign.end,
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold))),
                               ],
                             ),
                           ],

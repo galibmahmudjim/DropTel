@@ -6,18 +6,23 @@ import 'package:intl/intl.dart';
 import '../Obj/Statement.dart';
 import '../Obj/User.dart';
 
-class StatementSummery extends StatefulWidget {
+class ActivityStatementSummery extends StatefulWidget {
   final User user;
   final Statement statement;
+  final String title;
 
-  const StatementSummery(
-      {super.key, required this.user, required this.statement});
+  const ActivityStatementSummery(
+      {super.key,
+      required this.user,
+      required this.statement,
+      required this.title});
 
   @override
-  State<StatementSummery> createState() => _StatementSummeryState();
+  State<ActivityStatementSummery> createState() =>
+      _ActivityStatementSummeryState();
 }
 
-class _StatementSummeryState extends State<StatementSummery> {
+class _ActivityStatementSummeryState extends State<ActivityStatementSummery> {
   @override
   double height = 0;
   double width = 0;
@@ -30,6 +35,27 @@ class _StatementSummeryState extends State<StatementSummery> {
         child: Scaffold(
       backgroundColor: Colors.white,
       body: Body(),
+      appBar: AppBar(
+          elevation: 5,
+          backgroundColor: Colors.transparent,
+          iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
+          title: Text(
+            widget.title,
+            style: GoogleFonts.lato(
+                color: Colors.black.withOpacity(0.8),
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
+          ),
+          shadowColor: Colors.transparent,
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(0),
+            child: Opacity(
+              opacity: 0.1,
+              child: Container(
+                height: 0.5,
+              ),
+            ),
+          )),
     ));
   }
 
@@ -53,7 +79,7 @@ class _StatementSummeryState extends State<StatementSummery> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(
-                            height: height * 0.12,
+                            height: 30,
                           ),
                           Container(
                             padding: EdgeInsets.only(left: 30),
@@ -88,9 +114,6 @@ class _StatementSummeryState extends State<StatementSummery> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: height * 0.12,
-                        ),
                         Container(
                           child: Text(
                             "Total Expense",
@@ -119,7 +142,7 @@ class _StatementSummeryState extends State<StatementSummery> {
                 Container(
                   width: width,
                   padding: EdgeInsets.all(20),
-                  margin: EdgeInsets.only(left: 10, right: 10),
+                  margin: EdgeInsets.only(left: 10, right: 10, top: 20),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     color: Color.fromRGBO(66, 34, 74, 1),
@@ -250,20 +273,6 @@ class _StatementSummeryState extends State<StatementSummery> {
                     ],
                   ),
                 )
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.only(left: 10, top: 10),
-            color: Colors.transparent,
-            height: height * 0.05,
-            child: Row(
-              children: [
-                IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: Icon(Icons.arrow_back)),
               ],
             ),
           ),

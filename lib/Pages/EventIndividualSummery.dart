@@ -1,59 +1,56 @@
-import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/EventGuest.dart';
-import 'package:droptel/Obj/eventWallet.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../Obj/User.dart';
 import '../Obj/Wallet.dart';
+import '../Util/AllTransactions.dart';
 import '../Util/ExpenseCalculate.dart';
-import 'ActivityIndividualSummery.dart';
+import 'ActivityStatementSummery.dart';
 
-class ActivitySummery extends StatefulWidget {
+class EventIndividualSummery extends StatefulWidget {
   final User user;
-  final Activity activity;
   final Wallet wallet;
-  final eventWallet event;
-
-  const ActivitySummery(
+  final EventGuest eventGuest;
+  const EventIndividualSummery(
       {super.key,
       required this.user,
-      required this.activity,
       required this.wallet,
-      required this.event});
+      required this.eventGuest});
 
   @override
-  State<ActivitySummery> createState() => _ActivitySummeryState();
+  State<EventIndividualSummery> createState() => _EventIndividualSummeryState();
 }
 
-class _ActivitySummeryState extends State<ActivitySummery> {
+class _EventIndividualSummeryState extends State<EventIndividualSummery> {
+  User user = User();
+  Wallet wallet = Wallet();
+  EventGuest eventGuest = EventGuest();
   double height = 0;
   double width = 0;
   double total = 0;
-
-  User user = User();
-  Activity activity = Activity();
-  Wallet wallet = Wallet();
-  eventWallet event = eventWallet();
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
     user = widget.user;
-    event = widget.event;
     wallet = widget.wallet;
-    activity = widget.activity;
+    eventGuest = widget.eventGuest;
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return SafeArea(
         child: Scaffold(
-      backgroundColor: Colors.white,
       body: Body(),
       appBar: AppBar(
           elevation: 5,
           backgroundColor: Colors.transparent,
           iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
           title: Text(
-            event.title!,
+            wallet.title!,
             style: GoogleFonts.lato(
                 color: Colors.black.withOpacity(0.8),
                 fontSize: 20,
@@ -73,14 +70,9 @@ class _ActivitySummeryState extends State<ActivitySummery> {
   }
 
   Body() {
-    DateTime date = DateTime.parse(activity.dateTime!);
-    DateFormat formatter = DateFormat('hh-mm aa\ndd-MMM-yyyy');
-    String formatted = formatter.format(date);
-    var expenditure = ActivityExpense(activity);
-    var paid = ActivityPayment(activity);
-    total = ActivityDueExpense(activity);
-
-    var countMembers = event.eventGuest?.length;
+    // DateTime date = DateTime.parse(statement.dateTime!);
+    // DateFormat formatter = DateFormat('hh-mm aa\ndd-MMM-yyyy');
+    // String formatted = formatter.format(date);
     return Container(
       height: height,
       width: width,
@@ -90,7 +82,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
           SingleChildScrollView(
             child: Column(
               children: [
-                Row(children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Expanded(
                     flex: 3,
                     child: Column(
@@ -103,27 +95,27 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                             padding: EdgeInsets.only(left: 30),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              activity.title!,
+                              eventGuest.name!,
                               style: GoogleFonts.inter(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                           ),
                           SizedBox(
-                            height: 20,
+                            height: 10,
                           ),
                           Container(
                             padding: EdgeInsets.only(left: 30),
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              formatted,
+                              eventGuest.email?.toString() ?? "",
                               style: GoogleFonts.poppins(
-                                  color: Colors.black26,
+                                  color: Colors.black.withOpacity(0.8),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600),
                             ),
                           ),
                           SizedBox(
-                            height: 20,
+                            height: 30,
                           ),
                         ]),
                   ),
@@ -132,7 +124,9 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(),
+                        SizedBox(
+                          height: 30,
+                        ),
                         Container(
                           child: Text(
                             "Due Expense",
@@ -147,7 +141,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                         ),
                         Container(
                           child: Text(
-                            "৳ ${total.toString()}",
+                            "৳ ${EventDueIndividual(wallet, eventGuest.index!)}",
                             style: GoogleFonts.workSans(
                                 color: Colors.black,
                                 fontSize: 20,
@@ -183,7 +177,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                       ),
                       Container(
                         child: Text(
-                          "৳ ${expenditure.toString()}",
+                          "৳ ${EventExpenseIndividual(wallet, eventGuest.index!).toStringAsFixed(2)}",
                           style: GoogleFonts.workSans(
                               color: Colors.white,
                               fontSize: 20,
@@ -195,7 +189,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                       ),
                       Container(
                         child: Text(
-                          "Paid",
+                          "Payment",
                           style: GoogleFonts.workSans(
                               color: Colors.white,
                               fontSize: 20,
@@ -207,7 +201,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                       ),
                       Container(
                         child: Text(
-                          "৳ ${paid.toString()}",
+                          "৳ ${EventPaymentIndividual(wallet, eventGuest.index!).toStringAsFixed(2)}",
                           style: GoogleFonts.workSans(
                               color: Colors.white,
                               fontSize: 20,
@@ -230,9 +224,9 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: EdgeInsets.only(left: 10),
+                        padding: EdgeInsets.only(left: 20),
                         child: Text(
-                          "Included ${countMembers} Person",
+                          "Statement Transactions",
                           style: GoogleFonts.inter(
                               fontSize: 15, fontWeight: FontWeight.bold),
                         ),
@@ -250,120 +244,137 @@ class _ActivitySummeryState extends State<ActivitySummery> {
   }
 
   memberList() {
+    List<StatementWithParentsTitle> statements =
+        FindAllEventIndividualTransaction(wallet, eventGuest.index!);
+
+    statements.sort((a, b) {
+      return b.statement.dateTime!.compareTo(a.statement.dateTime!);
+    });
+
     return ListView.builder(
       physics: NeverScrollableScrollPhysics(),
       padding: EdgeInsets.only(top: 20, bottom: height * 0.4),
       scrollDirection: Axis.vertical,
       shrinkWrap: true,
-      itemCount: event.eventGuest?.length,
+      itemCount: statements.length,
       itemBuilder: (BuildContext context, int index) {
-        return makeListTile(event.eventGuest?[index]);
+        // return Container();
+        return makeListTile(statements[index]);
       },
     );
   }
 
-  makeListTile(EventGuest? member) {
+  makeListTile(StatementWithParentsTitle? statement) {
+    DateTime date = DateTime.parse(statement?.statement.dateTime! ?? "");
+    DateFormat formatter = DateFormat('hh:mm aa\ndd-MMM-yyyy');
+    String formatted = formatter.format(date);
     return Card(
-        margin: EdgeInsets.only(bottom: 10, right: 10),
-        elevation: 0.2,
+        elevation: 8.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        color: statement?.statement.type == "Activity"
+            ? Colors.lightBlueAccent
+            : (statement?.statement)?.statementType == "Payment"
+                ? Colors.lime
+                : Colors.green,
+        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 16.0),
         child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(20.0),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return IndividualSummery(
-                activity: activity,
+              return ActivityStatementSummery(
                 user: user,
-                wallet: wallet,
-                eventGuest: member,
+                statement: statement!.statement,
+                title: statement.title!,
               );
             }));
+
+            setState(() {});
           },
-          child: Container(
-              margin: EdgeInsets.only(bottom: 10),
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.transparent,
-              ),
-              child: Row(
+          child: IntrinsicHeight(
+              child: Container(
+            margin: EdgeInsets.only(
+              top: 10,
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+            child: IntrinsicHeight(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: Color(int.parse(member!.color!))
-                                  .withOpacity(0.8)),
-                          child: Center(
-                            child: Text(
-                              member.name![0],
-                              style: GoogleFonts.inter(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Column(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              child: Text(
-                                member.name!,
-                                style: GoogleFonts.inter(
-                                    fontSize: 15, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            if (member.email != "")
-                              SizedBox(
-                                height: 5,
-                              ),
-                            Container(
-                              child: Text(
-                                member.email!,
-                                style: GoogleFonts.inter(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
+                            Text(statement?.statement?.title ?? "Title",
+                                style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                            SizedBox(height: 5),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  height: 5,
+                                ),
+                                Text(formatted,
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500)),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            child: Text(
-                              "Due Expense: ",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          Container(
-                            child: Text(
-                              "৳ ${ActivityIndividualDue(activity, member.index!).toString()}",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
+                        )),
                       ),
+                      Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: EdgeInsets.only(left: 10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                        "${(statement?.statement)?.statementType == "Payment" ? "Payemnt" : "Expenditure"}: ",
+                                        style: GoogleFonts.robotoMono(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold)),
+                                    Expanded(
+                                        child: Text(
+                                            statement!.statement.totalPerPerson
+                                                .toString(),
+                                            textAlign: TextAlign.end,
+                                            style: GoogleFonts.robotoMono(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold))),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )),
                     ],
-                  ),
+                  )
                 ],
-              )),
+              ),
+            ),
+          )),
         ));
   }
 }

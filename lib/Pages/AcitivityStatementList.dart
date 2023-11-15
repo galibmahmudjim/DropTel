@@ -1,89 +1,68 @@
+import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/ActivityList.dart';
-import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
-import 'package:droptel/Pages/AcitivityStatementList.dart';
-import 'package:droptel/Pages/expenses.dart';
-import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../Constants/Logger.dart';
+import '../Obj/Statement.dart';
 import '../Obj/User.dart';
-import '../Widget/snackbar.dart';
+import '../Widget/loading.dart';
+import 'expenseActivity.dart';
+import 'expenses.dart';
 
-class EventHomePage extends StatefulWidget {
-  final eventWallet eventwallet;
+class ActivityStatementList extends StatefulWidget {
+  final Wallet wallet;
+  final eventWallet event;
   final User user;
-  const EventHomePage({
-    required this.eventwallet,
+  final String activityID;
+  const ActivityStatementList({
+    required this.wallet,
+    required this.event,
     required this.user,
+    required this.activityID,
   });
 
   @override
-  State<EventHomePage> createState() => _EventHomePageState();
+  State<ActivityStatementList> createState() => _ActivityStatementListState();
 }
 
-class _EventHomePageState extends State<EventHomePage> {
-  eventWallet? Eventwallet;
-  User? user;
-  Wallet? wallet;
-
-  bool isLoading = false;
-
-  Future<void> getWalletDetails() async {
-    isLoading = true;
-    Future? result = Mongodb.FindEventDetails(Eventwallet!.sId!);
-    result
-        ?.then((value) => {
-              if (value != null)
-                {
-                  setState(() {
-                    isLoading = false;
-                    wallet = Wallet.fromJson(value);
-                    wallet!.activityList!
-                        .sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
-                  })
-                }
-              else
-                {
-                  setState(() {
-                    isLoading = false;
-                    wallet = null;
-                  })
-                }
-            })
-        .timeout(const Duration(seconds: 10), onTimeout: () {
-      setState(() {
-        isLoading = false;
-        wallet = null;
-      });
-
-      return snackBar(context, "Something went wrong", Colors.redAccent);
-    });
-  }
+class _ActivityStatementListState extends State<ActivityStatementList> {
+  Wallet wallet = Wallet();
+  eventWallet event = eventWallet();
+  User user = User();
+  Activity activity = Activity();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Eventwallet = widget.eventwallet;
+    event = widget.event;
     user = widget.user;
-    if (wallet == null) {
-      getWalletDetails();
-      isLoading = false;
-    } else {
-      isLoading = false;
-      wallet!.activityList!.sort((a, b) => b.dateTime!.compareTo(a.dateTime!));
-    }
+    getAllData();
+  }
+
+  bool isLoading = false;
+  getAllData() async {
+    Future<dynamic>? data = Mongodb.FindEventDetails(event.sId!);
+    isLoading = true;
+    data?.then((value) => {
+          setState(() {
+            wallet = Wallet.fromJson(value);
+            activity = wallet.activityList!.where((element) {
+              return element.sId == widget.activityID;
+            }).first as Activity;
+            isLoading = false;
+          })
+        });
+    setState(() {});
   }
 
   double height = 0;
   double width = 0;
-
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
@@ -94,15 +73,17 @@ class _EventHomePageState extends State<EventHomePage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return expenses(
-              eventwallet: Eventwallet!,
-              user: user!,
+            return expenseActivity(
+              activity: activity,
+              eventwallet: event,
+              user: user,
+              id: widget.activityID,
             );
           }));
           setState(() {});
         },
         label: Text(
-          "Add Expense",
+          "Add Statement",
           style: GoogleFonts.lato(
               color: Colors.white.withOpacity(0.8),
               fontSize: 15,
@@ -129,19 +110,19 @@ class _EventHomePageState extends State<EventHomePage> {
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
                     return expenses(
-                      eventwallet: Eventwallet!,
-                      user: user!,
+                      eventwallet: event,
+                      user: user,
                     );
                   }));
                   setState(() {});
                 },
                 icon: Icon(
-                  Icons.delete,
+                  Icons.edit,
                   color: Colors.black.withOpacity(0.7),
                 ))
           ],
           title: Text(
-            Eventwallet?.title ?? "Event",
+            activity.title ?? "Event",
             style: GoogleFonts.lato(
                 color: Colors.white.withOpacity(0.8),
                 fontSize: 20,
@@ -186,7 +167,7 @@ class _EventHomePageState extends State<EventHomePage> {
         right: true,
         child: RefreshIndicator(
             onRefresh: () async {
-              await getWalletDetails();
+              await getAllData();
             },
             notificationPredicate: (ScrollNotification notification) {
               return notification.depth == 1;
@@ -199,14 +180,14 @@ class _EventHomePageState extends State<EventHomePage> {
                   shrinkWrap: true,
                   itemCount: 1,
                   itemBuilder: (BuildContext context, int index) {
-                    return activityList();
+                    return activityListView();
                   },
                 ),
               )
             ]))));
   }
 
-  activityList() {
+  activityListView() {
     return Stack(
       children: [
         Container(
@@ -217,7 +198,7 @@ class _EventHomePageState extends State<EventHomePage> {
             Expanded(
               child: Container(
                 child: FutureBuilder<dynamic>(
-                  future: Mongodb.FindEventDetails(Eventwallet!.sId!),
+                  future: Mongodb.FindEventDetails(event.sId!),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return loading(
@@ -237,13 +218,17 @@ class _EventHomePageState extends State<EventHomePage> {
                       if (data?.length == 0 || data == null) {
                         return Center(
                             child: Text(
-                          'No Activity Found',
+                          'No Statement Found',
                           style: TextStyle(
                               fontSize: 20.0, fontWeight: FontWeight.w500),
                         ));
                       } else {
                         wallet = Wallet.fromJson(data);
-                        if (wallet!.activityList!.length == 0) {
+                        activity = wallet.activityList!.where((element) {
+                          return element.sId == widget.activityID;
+                        }).first as Activity;
+                        if (activity.statements?.length == 0 ||
+                            activity.statements == null) {
                           return Center(
                               child: Text(
                             'No Activity Found',
@@ -263,11 +248,11 @@ class _EventHomePageState extends State<EventHomePage> {
                               EdgeInsets.only(top: 20, bottom: height * 0.4),
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: wallet?.activityList?.length,
+                          itemCount: activity.statements?.length,
                           itemBuilder: (BuildContext context, int index) {
-                            wallet!.activityList!.sort(
+                            activity.statements?.sort(
                                 (a, b) => b.dateTime!.compareTo(a.dateTime!));
-                            return makeListTile(wallet!.activityList![index]);
+                            return makeListTile(activity.statements![index]);
                           },
                         ),
                       );
@@ -286,9 +271,7 @@ class _EventHomePageState extends State<EventHomePage> {
     DateTime dateTime = DateTime.parse(items.dateTime!);
     DateFormat formatter = DateFormat('hh:mm aa\ndd-MMM-yyyy');
     String formatted = formatter.format(dateTime);
-    return items.type == "Activity"
-        ? CardActivity(items, formatted)
-        : CardStatement(items, formatted);
+    return CardStatement(items, formatted);
   }
 
   CardStatement(ActivityList items, String formatted) {
@@ -469,122 +452,6 @@ class _EventHomePageState extends State<EventHomePage> {
                                             color: Colors.white,
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold))),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          )),
-        ));
-  }
-
-  CardActivity(ActivityList items, String formatted) {
-    return Card(
-        elevation: 8.0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        color: items.type == "Activity"
-            ? Colors.lightBlueAccent
-            : (items as Statement).statementType == "Payment"
-                ? Colors.lime
-                : Colors.green,
-        margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20.0),
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) {
-              return ActivityStatementList(
-                wallet: wallet!,
-                event: Eventwallet!,
-                user: user!,
-                activityID: items.sId!,
-              );
-            }));
-          },
-          child: IntrinsicHeight(
-              child: Container(
-            margin: EdgeInsets.only(
-              top: 10,
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-            child: IntrinsicHeight(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                          width: width * 0.4,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(items.title ?? "Title",
-                                  style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                              SizedBox(height: 5),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  if (items.type == "Activity" &&
-                                      ((items as Activity).description !=
-                                              null &&
-                                          (items).description != ""))
-                                    Text(items.description!,
-                                        style: TextStyle(color: Colors.white)),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                  Text(formatted,
-                                      style: GoogleFonts.inter(
-                                          color: Colors.white.withOpacity(0.8),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500)),
-                                  SizedBox(
-                                    height: 15,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )),
-                      Expanded(
-                          child: Container(
-                        width: width * 0.4,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              children: [
-                                Text("Expenses: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Row(
-                              children: [
-                                Text("Paid: ",
-                                    style: GoogleFonts.robotoMono(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ],

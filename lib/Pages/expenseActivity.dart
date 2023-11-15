@@ -3,38 +3,42 @@ import 'dart:core';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/Activity.dart';
-import 'package:droptel/Obj/ActivityList.dart';
 import 'package:droptel/Obj/EventGuest.dart';
 import 'package:droptel/Obj/PersonalTransition.dart';
 import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
-import 'package:droptel/Pages/EventHomePage.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:objectid/objectid.dart';
 
+import '../../Constants/Logger.dart';
 import '../../Obj/User.dart';
 import '../../Widget/snackbar.dart';
 
-class expenses extends StatefulWidget {
+class expenseActivity extends StatefulWidget {
   final eventWallet eventwallet;
   final User user;
+  final String id;
+  final Activity activity;
 
-  const expenses({Key? key, required this.eventwallet, required this.user})
+  const expenseActivity(
+      {Key? key,
+      required this.eventwallet,
+      required this.user,
+      required this.id,
+      required this.activity})
       : super(key: key);
 
   @override
-  State<expenses> createState() => _expensesState();
+  State<expenseActivity> createState() => _expenseActivityState();
 }
 
-class _expensesState extends State<expenses> {
+class _expenseActivityState extends State<expenseActivity> {
   bool isLoading = false;
-  bool isNewActivityCreated = false;
   double height = 0;
   double width = 0;
 
@@ -48,11 +52,6 @@ class _expensesState extends State<expenses> {
 
   //multiset guest end
 
-  //statement or activity
-  int buttonSeleted = 1;
-
-  //statement or activity end
-
   // new statement
   List<String> list = <String>['Payment', 'Expenditure'];
   var guestListSelected = [];
@@ -60,11 +59,6 @@ class _expensesState extends State<expenses> {
   int actionSelected = 1;
 
   // new state end
-
-  //new activity start
-  TextEditingController activityNameController = TextEditingController();
-  TextEditingController activityDescriptionController = TextEditingController();
-  //new activity end
 
   TextEditingController statementNameController = TextEditingController();
   TextEditingController amountTextController = TextEditingController();
@@ -128,7 +122,7 @@ class _expensesState extends State<expenses> {
                 ))
           ],
           title: Text(
-            "Event Wallet",
+            widget.activity.title!,
             style: GoogleFonts.lato(
                 color: Colors.green.withOpacity(0.8),
                 fontSize: 20,
@@ -149,14 +143,10 @@ class _expensesState extends State<expenses> {
   }
 
   Widget Body() {
-    String unicodeString = '\u09F3';
-    DateTime date = DateTime.parse(widget.eventwallet.dateCreated.toString());
-    var formattedDate = DateFormat('HH:mm a\nyyyy-MMM-dd').format(date);
     return Container(
+      padding: EdgeInsets.only(top: 50),
       decoration: BoxDecoration(
         color: Colors.indigo[500],
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10), topRight: Radius.circular(10)),
       ),
       child: Center(
         child: Stack(
@@ -169,149 +159,9 @@ class _expensesState extends State<expenses> {
                     child: Column(
                       children: [
                         Container(
-                          height: height * 0.25,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              image: DecorationImage(
-                                image: AssetImage("assets/expenseBG.jpg"),
-                                fit: BoxFit.cover,
-                                opacity: 0.3,
-                              ),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.bottomRight,
-                              children: [
-                                Column(
-                                  children: [
-                                    Container(
-                                      width: width,
-                                      color: Colors.white54,
-                                      child: Container(
-                                        padding:
-                                            EdgeInsets.only(left: 30, top: 10),
-                                        child: Text(
-                                          widget.eventwallet.title.toString(),
-                                          style: GoogleFonts.lato(
-                                              color: Colors.black54,
-                                              fontSize: 30,
-                                              fontWeight: FontWeight.w900),
-                                        ),
-                                      ),
-                                    ), //title
-                                    Container(
-                                      width: width,
-                                      color: Colors.white54,
-                                      child: Container(
-                                        padding:
-                                            EdgeInsets.only(left: 32, top: 5),
-                                        child: Text(
-                                          widget.eventwallet.description
-                                              .toString(),
-                                          style: GoogleFonts.lato(
-                                              color: Colors.grey,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ), //description
-                                    Expanded(
-                                      child: Container(
-                                          width: width,
-                                          padding: EdgeInsets.only(
-                                              left: 10, top: 30),
-                                          color: Colors.white54,
-                                          child: Row(
-                                            children: [
-                                              Opacity(
-                                                opacity: 0.3,
-                                                child: CircleAvatar(
-                                                  radius: width * 0.04,
-                                                  backgroundColor:
-                                                      Colors.black12,
-                                                  child: Icon(
-                                                    size: width * 0.04,
-                                                    Icons.calendar_today,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: 20,
-                                              ),
-                                              Text(
-                                                formattedDate.toString(),
-                                                style: GoogleFonts.notoSans(
-                                                    color: Colors.black54,
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ],
-                                          )),
-                                    ), //Date
-                                  ],
-                                ),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                      top: height / 7, left: width * 0.48),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text(
-                                            "Expense Summery",
-                                            style: GoogleFonts.notoSans(
-                                                color: Colors.black54,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Container(
-                                              padding: EdgeInsets.only(top: 5),
-                                              child: Text(
-                                                  String.fromCharCodes(
-                                                      unicodeString.runes),
-                                                  style: GoogleFonts.notoSans(
-                                                      color: Colors.black54,
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold))),
-                                          SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text(
-                                            "10000",
-                                            style: GoogleFonts.notoSans(
-                                                color: Colors.black54,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ), //Amount
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Container(
                           padding: EdgeInsets.only(top: 20),
                           child: Text(
-                            "Create new ${buttonSeleted == 1 ? "Statement" : "Activity"}",
+                            "Create new Statement",
                             style: GoogleFonts.notoSans(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -320,7 +170,6 @@ class _expensesState extends State<expenses> {
                         ), //title create
                         Container(
                           width: width * 0.9,
-                          // To ensure the container spans the full width.
                           child: Opacity(
                             opacity: 0.3,
                             child: Divider(
@@ -332,72 +181,8 @@ class _expensesState extends State<expenses> {
                         SizedBox(
                           height: 10,
                         ),
-                        Container(
-                          padding: EdgeInsets.only(top: 10, bottom: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              OutlinedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      buttonSeleted = 1;
-                                    });
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                        width: 1,
-                                        color: buttonSeleted == 1
-                                            ? Colors.redAccent
-                                            : Colors.greenAccent),
-                                    // Set border width
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  child: Text(
-                                    "Statement",
-                                    style: GoogleFonts.notoSans(
-                                        color: buttonSeleted == 1
-                                            ? Colors.redAccent
-                                            : Colors.greenAccent,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  )),
-                              OutlinedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      buttonSeleted = 2;
-                                    });
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    padding:
-                                        EdgeInsets.only(left: 30, right: 30),
-                                    side: BorderSide(
-                                        width: 1,
-                                        color: buttonSeleted == 2
-                                            ? Colors.redAccent
-                                            : Colors.greenAccent),
-                                    // Set border width
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  child: Text(
-                                    "Activity",
-                                    style: GoogleFonts.notoSans(
-                                        color: buttonSeleted == 2
-                                            ? Colors.redAccent
-                                            : Colors.greenAccent,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  ))
-                            ],
-                          ),
-                        ), //radio button
-                        SizedBox(
-                          height: 10,
-                        ),
-                        buttonSeleted == 1 ? newStatement() : newActivity(),
+
+                        newStatement(),
                       ],
                     ),
                   ),
@@ -447,7 +232,7 @@ class _expensesState extends State<expenses> {
           SizedBox(
             height: 10,
           ),
-          AddExpensesButtonStatement(),
+          AddexpensesBottomSheetButtonStatement(),
         ],
       ),
     );
@@ -585,25 +370,6 @@ class _expensesState extends State<expenses> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget newActivity() {
-    return Column(
-      children: [
-        SizedBox(
-          height: height * 0.03,
-        ),
-        AddTitleActivity(),
-        SizedBox(
-          height: 20,
-        ),
-        AddDesriptionActivity(),
-        SizedBox(
-          height: 10,
-        ),
-        AddActivityButtonStatement(),
-      ],
     );
   }
 
@@ -872,7 +638,7 @@ class _expensesState extends State<expenses> {
 
   reviewPaymentStatement() {
     amountPayment = double.parse(amountTextController.text.toString());
-    amountPayment = double.parse(amountPayment.toStringAsFixed(2)) * -1;
+    amountPayment = double.parse(amountPayment.toStringAsFixed(2));
     totalAmountPayment = amountPayment;
     memberCountPayment = selectedGuests.length;
     totalPerPersonPayment;
@@ -1040,6 +806,7 @@ class _expensesState extends State<expenses> {
   }
 
   reviewStatement() {
+    logger.d("reviewStatement");
     return Card(
         elevation: 1,
         color: Colors.indigo[500]?.withOpacity(0.7),
@@ -1552,7 +1319,7 @@ class _expensesState extends State<expenses> {
     );
   }
 
-  AddExpensesButtonStatement() {
+  AddexpensesBottomSheetButtonStatement() {
     return Container(
       margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
       child: ElevatedButton(
@@ -1639,7 +1406,7 @@ class _expensesState extends State<expenses> {
           });
         },
         child: Text(
-          "${(isReview && actionSelected == 2) || (isReviewPayment && actionSelected == 1) ? "Add Statement" : "Review"}",
+          "${isReview ? "Add Statement" : "Review"}",
           style: GoogleFonts.notoSans(
               color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
         ),
@@ -1657,232 +1424,6 @@ class _expensesState extends State<expenses> {
         ),
       ),
     );
-  }
-
-  AddTitleActivity() {
-    return Container(
-      margin: EdgeInsets.only(left: 20, right: 20),
-      padding: EdgeInsets.only(left: 10, right: 10),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.5),
-          width: 1,
-        ),
-      ),
-      child: TextFormField(
-        controller: activityNameController,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter Name';
-          }
-          return null;
-        },
-        cursorColor: Colors.white,
-        style: TextStyle(
-          fontSize: 17,
-          fontFamily: GoogleFonts.prompt(
-            color: Color(0xFF464647),
-          ).fontFamily,
-          fontStyle: FontStyle.normal,
-          fontWeight: FontWeight.w400,
-          color: Colors.white,
-        ),
-        textAlignVertical: TextAlignVertical.bottom,
-        textAlign: TextAlign.left,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          errorStyle: TextStyle(height: 0, fontSize: 0),
-          hintText: 'Add Title',
-          hintStyle: TextStyle(
-            fontFamily: GoogleFonts.prompt().fontFamily,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-            color: Colors.white.withOpacity(0.5),
-          ),
-        ),
-      ),
-    );
-  }
-
-  AddDesriptionActivity() {
-    return Container(
-      margin: EdgeInsets.only(left: 20, right: 20),
-      padding: EdgeInsets.only(left: 10, right: 10),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.5),
-          width: 1,
-        ),
-      ),
-      child: TextFormField(
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        controller: activityDescriptionController,
-        cursorColor: Colors.white,
-        style: TextStyle(
-          fontSize: 17,
-          fontFamily: GoogleFonts.prompt(
-            color: Color(0xFF464647),
-          ).fontFamily,
-          fontStyle: FontStyle.normal,
-          fontWeight: FontWeight.w400,
-          color: Colors.white,
-        ),
-        textAlignVertical: TextAlignVertical.bottom,
-        textAlign: TextAlign.left,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          errorStyle: TextStyle(height: 0, fontSize: 0),
-          hintText: 'Add Description',
-          hintStyle: TextStyle(
-            fontFamily: GoogleFonts.prompt().fontFamily,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-            color: Colors.white.withOpacity(0.5),
-          ),
-        ),
-      ),
-    );
-  }
-
-  AddActivityButtonStatement() {
-    return Container(
-      margin: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 40),
-      child: ElevatedButton(
-        onPressed: () {
-          onAddActivityProcess();
-        },
-        child: Text(
-          "Add Activity",
-          style: GoogleFonts.notoSans(
-              color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.redAccent,
-          padding: EdgeInsets.only(
-            top: 15,
-            bottom: 15,
-            left: 20,
-            right: 20,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void onAddActivityProcess() {
-    if (activityNameController.text.isEmpty) {
-      snackBar(context, "Please enter Title", Colors.redAccent);
-      return;
-    }
-    DateTime now = DateTime.now();
-    ActivityList activity = Activity(
-      sId: ObjectId().toString(),
-      title: activityNameController.text.toString(),
-      type: "Activity",
-      description: activityDescriptionController.text.toString(),
-      dateTime: now.toString(),
-    );
-
-    isLoading = true;
-    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
-    bool walletflag = false;
-    Wallet wallet = Wallet();
-    String id;
-    List<ActivityList> stList;
-    resultWallet
-        ?.then((value) => {
-              if (value != null)
-                {
-                  wallet = Wallet.fromJson(value),
-                  stList = wallet.activityList!.map((e) => e).toList(),
-                  stList.add(activity),
-                  wallet.activityList = stList,
-                  walletflag = true,
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              Navigator.pushReplacement(context,
-                                  MaterialPageRoute(
-                                builder: (context) {
-                                  return EventHomePage(
-                                    eventwallet: widget.eventwallet,
-                                    user: widget.user,
-                                  );
-                                },
-                              ));
-                              isLoading = false;
-                              snackBar(context, "Activity Added",
-                                  Colors.greenAccent);
-                            }),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
-                  setState(() {
-                    isLoading = false;
-                  }),
-                }
-              else
-                {
-                  walletflag = false,
-                  id = ObjectId().toString(),
-                  wallet = Wallet(
-                    sId: id,
-                    eventID: widget.eventwallet.sId,
-                    eventName: widget.eventwallet.title,
-                    dateTime: now.toString(),
-                    title: activityNameController.text.toString(),
-                    type: selectedGuests.length == 1 ? "Single" : "Group",
-                    activityList: [activity],
-                  ),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(
-                              builder: (context) {
-                                return EventHomePage(
-                                  eventwallet: widget.eventwallet,
-                                  user: widget.user,
-                                );
-                              },
-                            )),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
-                }
-            })
-        .timeout(Duration(seconds: 10), onTimeout: () {
-      setState(() {
-        isLoading = false;
-      });
-      return snackBar(context, "Something went wrong", Colors.redAccent);
-    });
   }
 
   void ProcessPayment(
@@ -1901,7 +1442,7 @@ class _expensesState extends State<expenses> {
       );
     }).toList();
     DateTime now = DateTime.now();
-    ActivityList statement = Statement(
+    Statement statement = Statement(
       sId: ObjectId().toString(),
       title: string,
       type: "Statement",
@@ -1911,40 +1452,44 @@ class _expensesState extends State<expenses> {
       operation: null,
       amount: amountPayment,
       operationValue: null,
-      total: totalAmountPayment,
-      countMembers: memberCountPayment,
-      totalPerPerson: totalPerPersonPayment,
+      total: totalAmount,
+      countMembers: memberCount,
+      totalPerPerson: totalAmountPerPerson,
       totalWithMembers: totalWithPersonPayment,
       member: personalTransition,
     );
-
-    isLoading = true;
+    setState(() {
+      isLoading = true;
+    });
     var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
 
     Wallet wallet = Wallet();
     String id;
-    List<ActivityList> stList;
+    Activity activity = Activity();
+
+    List<Statement>? stList;
     resultWallet
         ?.then((value) => {
+              log_check(),
               if (value != null)
                 {
                   wallet = Wallet.fromJson(value),
-                  stList = wallet.activityList!.map((e) => e).toList(),
-                  stList.add(statement),
-                  wallet.activityList = stList,
+                  activity = wallet.activityList!
+                      .where((element) => element.sId == widget.id)
+                      .first as Activity,
+                  stList = activity.statements?.map((e) => e).toList(),
+                  if (stList == null) stList = [],
+                  stList?.add(statement),
+                  activity.statements = stList,
+                  wallet.activityList
+                      ?.removeWhere((element) => element.sId == widget.id),
+                  wallet.activityList?.add(activity),
+                  logger.d(wallet.toJson()),
                   Mongodb.EventWalletDetails(wallet)?.then((value) => {
                         if (value != null)
                           {
                             setState(() {
-                              Navigator.pushReplacement(context,
-                                  MaterialPageRoute(
-                                builder: (context) {
-                                  return EventHomePage(
-                                    eventwallet: widget.eventwallet,
-                                    user: widget.user,
-                                  );
-                                },
-                              ));
+                              Navigator.pop(context);
                               isLoading = false;
                               snackBar(context, "Statement Added",
                                   Colors.greenAccent);
@@ -1962,44 +1507,6 @@ class _expensesState extends State<expenses> {
                   setState(() {
                     isLoading = false;
                   }),
-                }
-              else
-                {
-                  id = ObjectId().toString(),
-                  wallet = Wallet(
-                    sId: id,
-                    eventID: widget.eventwallet.sId,
-                    eventName: widget.eventwallet.title,
-                    dateTime: now.toString(),
-                    title: string,
-                    type: selectedGuests.length == 1 ? "Single" : "Group",
-                    activityList: [statement],
-                  ),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(
-                              builder: (context) {
-                                return EventHomePage(
-                                  eventwallet: widget.eventwallet,
-                                  user: widget.user,
-                                );
-                              },
-                            )),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
                 }
             })
         .timeout(Duration(seconds: 10), onTimeout: () {
@@ -2029,16 +1536,16 @@ class _expensesState extends State<expenses> {
       );
     }).toList();
     DateTime now = DateTime.now();
-    ActivityList statement = Statement(
+    Statement statement = Statement(
       sId: ObjectId().toString(),
       title: string,
       type: "Statement",
-      CalculationTitle: string2,
       statementType: actionSelected == 1 ? "Payment" : "Expenditure",
       isCustomOperation: checkboxValue,
       dateTime: now.toString(),
       operation: selectedValueOperationString,
       amount: amount,
+      CalculationTitle: string2,
       operationValue: valueofOperation,
       total: totalAmount,
       countMembers: memberCount,
@@ -2052,28 +1559,30 @@ class _expensesState extends State<expenses> {
 
     Wallet wallet = Wallet();
     String id;
-    List<ActivityList> stList;
+    Activity activity = Activity();
+
+    List<Statement>? stList;
     resultWallet
         ?.then((value) => {
               if (value != null)
                 {
                   wallet = Wallet.fromJson(value),
-                  stList = wallet.activityList!.map((e) => e).toList(),
-                  stList.add(statement),
-                  wallet.activityList = stList,
+                  activity = wallet.activityList!
+                      .where((element) => element.sId == widget.id)
+                      .first as Activity,
+                  stList = activity.statements?.map((e) => e).toList(),
+                  if (stList == null) stList = [],
+                  stList?.add(statement),
+                  activity.statements = stList,
+                  wallet.activityList
+                      ?.removeWhere((element) => element.sId == widget.id),
+                  wallet.activityList?.add(activity),
+                  logger.d(wallet.toJson()),
                   Mongodb.EventWalletDetails(wallet)?.then((value) => {
                         if (value != null)
                           {
                             setState(() {
-                              Navigator.pushReplacement(context,
-                                  MaterialPageRoute(
-                                builder: (context) {
-                                  return EventHomePage(
-                                    eventwallet: widget.eventwallet,
-                                    user: widget.user,
-                                  );
-                                },
-                              ));
+                              Navigator.pop(context);
                               isLoading = false;
                               snackBar(context, "Statement Added",
                                   Colors.greenAccent);
@@ -2091,44 +1600,6 @@ class _expensesState extends State<expenses> {
                   setState(() {
                     isLoading = false;
                   }),
-                }
-              else
-                {
-                  id = ObjectId().toString(),
-                  wallet = Wallet(
-                    sId: id,
-                    eventID: widget.eventwallet.sId,
-                    eventName: widget.eventwallet.title,
-                    dateTime: now.toString(),
-                    title: string,
-                    type: selectedGuests.length == 1 ? "Single" : "Group",
-                    activityList: [statement],
-                  ),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            Navigator.pushReplacement(context,
-                                MaterialPageRoute(
-                              builder: (context) {
-                                return EventHomePage(
-                                  eventwallet: widget.eventwallet,
-                                  user: widget.user,
-                                );
-                              },
-                            )),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
                 }
             })
         .timeout(Duration(seconds: 10), onTimeout: () {

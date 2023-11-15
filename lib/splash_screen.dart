@@ -39,7 +39,7 @@ class _splash_screenState extends State<splash_screen> {
     final String? id = await sharedPref.getID();
     final String? name = await sharedPref.getName();
     if (id != null && name != null) {
-      return HomePage(id: id!, name: name!);
+      return HomePage(id: id, name: name!);
     } else {
       return HomePageLogin();
     }

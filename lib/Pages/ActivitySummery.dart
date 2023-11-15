@@ -288,6 +288,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
               child: Row(
                 children: [
                   Expanded(
+                    flex: 4,
                     child: Row(
                       children: [
                         Container(
@@ -326,7 +327,7 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                               ),
                             Container(
                               child: Text(
-                                member.email!,
+                                "${member.email!.length > 15 ? "${member.email?.substring(0, 15)} ..." : member.email}",
                                 style: GoogleFonts.inter(
                                     fontSize: 12, fontWeight: FontWeight.bold),
                               ),
@@ -336,31 +337,34 @@ class _ActivitySummeryState extends State<ActivitySummery> {
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            child: Text(
-                              "Due Expense: ",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
+                  Expanded(
+                    flex: 5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(
+                                "Due Expense: ",
+                                style: GoogleFonts.robotoMono(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
-                          Container(
-                            child: Text(
-                              "৳ ${ActivityIndividualDue(activity, member.index!).toString()}",
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            Container(
+                              child: Text(
+                                "৳ ${ActivityIndividualDue(activity, member.index!).toString()}",
+                                style: GoogleFonts.robotoMono(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               )),

@@ -8,6 +8,7 @@ import 'package:droptel/Obj/PersonalTransition.dart';
 import 'package:droptel/Obj/Statement.dart';
 import 'package:droptel/Obj/Wallet.dart';
 import 'package:droptel/Obj/eventWallet.dart';
+import 'package:droptel/Pages/AcitivityStatementList.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -105,22 +106,6 @@ class _expenseActivityState extends State<expenseActivity> {
       appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
           backgroundColor: Colors.white.withOpacity(0.4),
-          actions: [
-            IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.summarize,
-                  color: Colors.black.withOpacity(0.7),
-                )),
-            IconButton(
-                onPressed: () {
-                  setState(() {});
-                },
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.black.withOpacity(0.7),
-                ))
-          ],
           title: Text(
             widget.activity.title!,
             style: GoogleFonts.lato(
@@ -1460,7 +1445,7 @@ class _expenseActivityState extends State<expenseActivity> {
     setState(() {
       isLoading = true;
     });
-    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
+    var resultWallet = await Mongodb.FindEventDetails(widget.eventwallet.sId!);
 
     Wallet wallet = Wallet();
     String id;
@@ -1468,7 +1453,7 @@ class _expenseActivityState extends State<expenseActivity> {
 
     List<Statement>? stList;
     resultWallet
-        ?.then((value) => {
+        ?.then((value) async => {
               log_check(),
               if (value != null)
                 {
@@ -1484,28 +1469,20 @@ class _expenseActivityState extends State<expenseActivity> {
                       ?.removeWhere((element) => element.sId == widget.id),
                   wallet.activityList?.add(activity),
                   logger.d(wallet.toJson()),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              Navigator.pop(context);
-                              isLoading = false;
-                              snackBar(context, "Statement Added",
-                                  Colors.greenAccent);
-                            }),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
+                  await Mongodb.EventWalletDetails(wallet),
                   setState(() {
                     isLoading = false;
+                    snackBar(context, "Statement Added", Colors.greenAccent);
                   }),
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ActivityStatementList(
+                                wallet: wallet,
+                                event: widget.eventwallet,
+                                user: widget.user,
+                                activityID: widget.id,
+                              ))),
                 }
             })
         .timeout(Duration(seconds: 10), onTimeout: () {
@@ -1554,15 +1531,13 @@ class _expenseActivityState extends State<expenseActivity> {
     );
 
     isLoading = true;
-    var resultWallet = Mongodb.FindEventDetails(widget.eventwallet.sId!);
-
     Wallet wallet = Wallet();
     String id;
     Activity activity = Activity();
 
     List<Statement>? stList;
-    resultWallet
-        ?.then((value) => {
+    await Mongodb.FindEventDetails(widget.eventwallet.sId!)
+        ?.then((value) async => {
               if (value != null)
                 {
                   wallet = Wallet.fromJson(value),
@@ -1576,28 +1551,20 @@ class _expenseActivityState extends State<expenseActivity> {
                   wallet.activityList
                       ?.removeWhere((element) => element.sId == widget.id),
                   wallet.activityList?.add(activity),
-                  Mongodb.EventWalletDetails(wallet)?.then((value) => {
-                        if (value != null)
-                          {
-                            setState(() {
-                              Navigator.pop(context);
-                              isLoading = false;
-                              snackBar(context, "Statement Added",
-                                  Colors.greenAccent);
-                            }),
-                          }
-                        else
-                          {
-                            setState(() {
-                              isLoading = false;
-                            }),
-                            snackBar(context, "Something went wrong",
-                                Colors.redAccent),
-                          }
-                      }),
+                  await Mongodb.EventWalletDetails(wallet),
                   setState(() {
                     isLoading = false;
+                    snackBar(context, "Statement Added", Colors.greenAccent);
                   }),
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ActivityStatementList(
+                                wallet: wallet,
+                                event: widget.eventwallet,
+                                user: widget.user,
+                                activityID: widget.id,
+                              ))),
                 }
             })
         .timeout(Duration(seconds: 10), onTimeout: () {

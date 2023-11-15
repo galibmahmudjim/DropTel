@@ -7,11 +7,13 @@ import 'package:droptel/Obj/eventWallet.dart';
 import 'package:droptel/Pages/AcitivityStatementList.dart';
 import 'package:droptel/Pages/EventSummery.dart';
 import 'package:droptel/Pages/expenses.dart';
+import 'package:droptel/Pages/homepage.dart';
 import 'package:droptel/Widget/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../Constants/Logger.dart';
 import '../Obj/User.dart';
 import '../Util/ExpenseCalculate.dart';
 import '../Widget/snackbar.dart';
@@ -35,7 +37,13 @@ class _EventHomePageState extends State<EventHomePage> {
   Wallet? wallet;
 
   bool isLoading = false;
-
+  final List<String> sortList = [
+    "Both",
+    "Activity",
+    "Payment",
+    "Expenditure",
+  ];
+  String sortValue = "Both";
   Future<void> getWalletDetails() async {
     isLoading = true;
     Future? result = Mongodb.FindEventDetails(Eventwallet!.sId!);
@@ -91,6 +99,7 @@ class _EventHomePageState extends State<EventHomePage> {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
+    user = widget.user;
     return SafeArea(
         child: Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -136,20 +145,80 @@ class _EventHomePageState extends State<EventHomePage> {
                   Icons.summarize,
                   color: Colors.black.withOpacity(0.7),
                 )),
+            PopupMenuButton(
+                onSelected: (value) {
+                  loggerPrint(value);
+                  setState(() {
+                    sortValue = value.toString();
+                  });
+                },
+                icon: Icon(
+                  Icons.sort,
+                  color: Colors.black.withOpacity(0.7),
+                ),
+                itemBuilder: (BuildContext context) => [
+                      PopupMenuItem(
+                        child: Text("Both"),
+                        value: sortList[0],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[1]),
+                        value: sortList[1],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[2]),
+                        value: sortList[2],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[3]),
+                        value: sortList[3],
+                      ),
+                    ]),
             IconButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return expenses(
-                      eventwallet: Eventwallet!,
-                      user: user!,
-                    );
-                  }));
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Delete Event',
+                              style: TextStyle(
+                                  fontSize: 20.0, fontWeight: FontWeight.w500)),
+                          content: Text(
+                              'Are you sure you want to delete this event?',
+                              style: TextStyle(
+                                  fontSize: 15.0, fontWeight: FontWeight.w400)),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Cancel')),
+                            TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+
+                                  Mongodb.deleteEvent(
+                                      widget.eventwallet.sId.toString());
+
+                                  Navigator.pushReplacement(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return HomePage(
+                                      user: user!,
+                                    );
+                                  }));
+                                },
+                                child: Text('Delete')),
+                          ],
+                        );
+                      });
                   setState(() {});
                 },
                 icon: Icon(
                   Icons.delete,
                   color: Colors.black.withOpacity(0.7),
-                ))
+                )),
           ],
           title: Text(
             Eventwallet?.title ?? "Event",
@@ -274,11 +343,47 @@ class _EventHomePageState extends State<EventHomePage> {
                               EdgeInsets.only(top: 20, bottom: height * 0.4),
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: wallet?.activityList?.length,
+                          itemCount: wallet!.activityList!.where((element) {
+                                if (sortValue == "Both")
+                                  return true;
+                                else if (sortValue == "Activity")
+                                  return element.type == "Activity";
+                                else if (sortValue == "Payment")
+                                  return element.type == "Statement" &&
+                                      (element as Statement).statementType ==
+                                          "Payment";
+                                else if (sortValue == "Expenditure")
+                                  return element.type == "Statement" &&
+                                      (element as Statement).statementType ==
+                                          "Expenditure";
+                                else
+                                  return true;
+                              })!.length! +
+                              1,
                           itemBuilder: (BuildContext context, int index) {
                             wallet!.activityList!.sort(
                                 (a, b) => b.dateTime!.compareTo(a.dateTime!));
-                            return makeListTile(wallet!.activityList![index]);
+                            List<ActivityList> items =
+                                wallet!.activityList!.where((element) {
+                              if (sortValue == "Both")
+                                return true;
+                              else if (sortValue == "Activity")
+                                return element.type == "Activity";
+                              else if (sortValue == "Payment")
+                                return element.type == "Statement" &&
+                                    (element as Statement).statementType ==
+                                        "Payment";
+                              else if (sortValue == "Expenditure")
+                                return element.type == "Statement" &&
+                                    (element as Statement).statementType ==
+                                        "Expenditure";
+                              else
+                                return true;
+                            }).toList();
+                            return index == 0
+                                ? FilterSection()
+                                : makeListTile(
+                                    wallet!.activityList![index - 1]);
                           },
                         ),
                       );
@@ -300,6 +405,44 @@ class _EventHomePageState extends State<EventHomePage> {
     return items.type == "Activity"
         ? CardActivity(items, formatted)
         : CardStatement(items, formatted);
+  }
+
+  FilterSection() {
+    if (sortValue != "Both")
+      return Container(
+        padding: EdgeInsets.only(
+          left: 30,
+          right: 10,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              "Filter: ",
+              style: GoogleFonts.robotoSlab(
+                  fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Text(
+              sortValue,
+              style: GoogleFonts.robotoSlab(
+                  fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    sortValue = "Both";
+                  });
+                },
+                icon: Icon(
+                  Icons.close,
+                  size: 20,
+                ))
+          ],
+        ),
+      );
+    else
+      return Container();
   }
 
   CardStatement(ActivityList items, String formatted) {
@@ -358,9 +501,8 @@ class _EventHomePageState extends State<EventHomePage> {
                                   if (items.type == "Activity" &&
                                       ((items as Activity).description !=
                                               null &&
-                                          (items as Activity).description !=
-                                              ""))
-                                    Text((items as Activity).description!,
+                                          (items).description != ""))
+                                    Text((items).description!,
                                         style: TextStyle(color: Colors.white)),
                                   SizedBox(
                                     height: 5,

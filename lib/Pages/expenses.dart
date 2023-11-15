@@ -112,22 +112,6 @@ class _expensesState extends State<expenses> {
       appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black.withOpacity(0.7)),
           backgroundColor: Colors.white.withOpacity(0.4),
-          actions: [
-            IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.summarize,
-                  color: Colors.black.withOpacity(0.7),
-                )),
-            IconButton(
-                onPressed: () {
-                  setState(() {});
-                },
-                icon: Icon(
-                  Icons.edit,
-                  color: Colors.black.withOpacity(0.7),
-                ))
-          ],
           title: Text(
             "Event Wallet",
             style: GoogleFonts.lato(

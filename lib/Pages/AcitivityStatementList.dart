@@ -1,3 +1,4 @@
+import 'package:droptel/Constants/Logger.dart';
 import 'package:droptel/Model/Mongodb.dart';
 import 'package:droptel/Obj/Activity.dart';
 import 'package:droptel/Obj/ActivityList.dart';
@@ -39,6 +40,7 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
 
   bool isLoading = false;
   getAllData() async {
+    isLoading = true;
     Future<dynamic>? data = Mongodb.FindEventDetails(event.sId!);
 
     data?.then((value) => {
@@ -63,6 +65,13 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
     getAllData();
   }
 
+  final List<String> sortList = [
+    "Both",
+    "Activity",
+    "Payment",
+    "Expenditure",
+  ];
+  String sortValue = "Both";
   double height = 0;
   double width = 0;
   @override
@@ -117,6 +126,35 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
                   Icons.summarize,
                   color: Colors.black.withOpacity(0.7),
                 )),
+            PopupMenuButton(
+                onSelected: (value) {
+                  loggerPrint(value);
+                  setState(() {
+                    sortValue = value.toString();
+                  });
+                },
+                icon: Icon(
+                  Icons.sort,
+                  color: Colors.black.withOpacity(0.7),
+                ),
+                itemBuilder: (BuildContext context) => [
+                      PopupMenuItem(
+                        child: Text("Both"),
+                        value: sortList[0],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[1]),
+                        value: sortList[1],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[2]),
+                        value: sortList[2],
+                      ),
+                      PopupMenuItem(
+                        child: Text(sortList[3]),
+                        value: sortList[3],
+                      ),
+                    ]),
             IconButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -178,6 +216,9 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
         right: true,
         child: RefreshIndicator(
             onRefresh: () async {
+              setState(() {
+                isLoading = true;
+              });
               await getAllData();
             },
             notificationPredicate: (ScrollNotification notification) {
@@ -185,17 +226,58 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
             },
             child: SingleChildScrollView(
                 child: Column(children: <Widget>[
+              SizedBox(
+                height: 10,
+              ),
               Container(
                 child: ListView.builder(
                   scrollDirection: Axis.vertical,
                   shrinkWrap: true,
-                  itemCount: 1,
+                  itemCount: 2,
                   itemBuilder: (BuildContext context, int index) {
                     return activityListView();
                   },
                 ),
               )
             ]))));
+  }
+
+  FilterSection() {
+    if (sortValue != "Both")
+      return Container(
+        padding: EdgeInsets.only(
+          left: 30,
+          right: 10,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              "Filter: ",
+              style: GoogleFonts.robotoSlab(
+                  fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+            Spacer(),
+            Text(
+              sortValue,
+              style: GoogleFonts.robotoSlab(
+                  fontSize: 15, fontWeight: FontWeight.bold),
+            ),
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    sortValue = "Both";
+                  });
+                },
+                icon: Icon(
+                  Icons.close,
+                  size: 20,
+                ))
+          ],
+        ),
+      );
+    else
+      return Container();
   }
 
   activityListView() {
@@ -209,7 +291,7 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
             Expanded(
               child: Container(
                 child: FutureBuilder<dynamic>(
-                  future: Mongodb.FindEventDetails(event.sId!),
+                  future: Mongodb.FindEventDetails(event.sId!)!,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return loading(
@@ -258,14 +340,25 @@ class _ActivityStatementListState extends State<ActivityStatementList> {
                         },
                         child: ListView.builder(
                           padding:
-                              EdgeInsets.only(top: 20, bottom: height * 0.4),
+                              EdgeInsets.only(top: 0, bottom: height * 0.4),
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: activity.statements?.length,
+                          itemCount: activity.statements!.where((element) {
+                                return element.statementType == sortValue ||
+                                    sortValue == "Both";
+                              }).length +
+                              1,
                           itemBuilder: (BuildContext context, int index) {
                             activity.statements?.sort(
                                 (a, b) => b.dateTime!.compareTo(a.dateTime!));
-                            return makeListTile(activity.statements![index]);
+                            List<Statement> statements =
+                                activity.statements!.where((element) {
+                              return element.statementType == sortValue ||
+                                  sortValue == "Both";
+                            }).toList();
+                            return index == 0
+                                ? FilterSection()
+                                : makeListTile(statements[index - 1]);
                           },
                         ),
                       );

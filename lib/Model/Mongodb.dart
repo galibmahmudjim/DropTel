@@ -129,6 +129,6 @@ class Mongodb {
       connect();
     }
     final result = await Event_Wallet_collection.findOne({"EventID": eventID});
-    return await result;
+    return result;
   }
 }
